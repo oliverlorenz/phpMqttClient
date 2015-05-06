@@ -1,0 +1,20 @@
+{
+    "name": "oliverlorenz/reactphp-mqtt",
+    "description": "MQTT Bindings for reactphp",
+    "keywords": ["mqtt", "IoT"],
+    "authors": [
+        {
+            "name": "Oliver Lorenz",
+            "email": "mail@oliverlorenz.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "oliverlorenz\\reactphpmqtt\\": "src"
+        }
+    },
+    "minimum-stability": "dev",
+    "require": {
+        "react/react": "0.5.*@dev"
+    }
+}
