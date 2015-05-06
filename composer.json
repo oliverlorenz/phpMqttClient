@@ -1,6 +1,6 @@
 {
     "name": "oliverlorenz/reactphp-mqtt",
-    "description": "MQTT Bindings for reactphp",
+    "description": "a mqtt client library for php",
     "keywords": ["mqtt", "IoT"],
     "authors": [
         {
