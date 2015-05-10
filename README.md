@@ -2,15 +2,10 @@
 
 reactMqtt is a mqtt client library PHP. Its based on the reactPHP socket-client and added the mqtt protocol specific functions. I hope its a better starting point that the existing php mqtt libraries. 
 
-![build status](https://travis-ci.org/oliverlorenz/reactphpmqtt.svg) ![code climate](https://d3s6mut3hikguw.cloudfront.net/github/oliverlorenz/reactphpmqtt/badges/gpa.svg) ![coverage](https://d3s6mut3hikguw.cloudfront.net/github/oliverlorenz/reactphpmqtt/badges/coverage.svg)
+[![Build Status](https://travis-ci.org/oliverlorenz/reactphpmqtt.svg?branch=master)](https://travis-ci.org/oliverlorenz/reactphpmqtt) [![Code Climate](https://codeclimate.com/github/oliverlorenz/reactphpmqtt/badges/gpa.svg)](https://codeclimate.com/github/oliverlorenz/reactphpmqtt) [![Test Coverage](https://codeclimate.com/github/oliverlorenz/reactphpmqtt/badges/coverage.svg)](https://codeclimate.com/github/oliverlorenz/reactphpmqtt/coverage)
 
-### Notice - (May 6th, 2015)
-This is the first initial commit. Only some things work already:
-* Connect
-* Connection Ack
-* publish
-
-I will add more features if I need them. If you need features: please give feedback or contribute to get this library running.
+### Notice - (May 10th, 2015)
+This is library is not stable currently. Its an early state, but I am working on it. I will add more features if I need them. If you need features: please give feedback or contribute to get this library running.
 
 ## Goal
 
