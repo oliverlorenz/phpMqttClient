@@ -49,4 +49,6 @@ class SubscribeTest extends PHPUnit_Framework_TestCase {
             MessageHelper::getReadableByRawString(chr(130) . chr(14))
         );
     }
+
+
 }
