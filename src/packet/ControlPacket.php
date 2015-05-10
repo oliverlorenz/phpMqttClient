@@ -10,28 +10,49 @@ namespace oliverlorenz\reactphpmqtt\packet;
 use oliverlorenz\reactphpmqtt\protocol\Version;
 use oliverlorenz\reactphpmqtt\protocol\Version4;
 
-class ControlPacket implements Message {
+abstract class ControlPacket implements Message {
 
     protected $command;
 
     /** @var $version Version4 */
     protected $version;
 
-    protected $fixedHeader;
 
     protected $variableHeader;
 
     protected $payload;
 
     protected $useVariableHeader = false;
+    protected $useFixedHeader = true;
 
     protected $identifier;
 
-    public function __construct(Version $version, $command)
+    public function __construct(Version $version)
     {
         $this->version = $version;
-        $this->command = $command;
     }
+
+    /**
+     * @param Version $version
+     * @param string $rawInput
+     * @return static
+     */
+    public static function parse(Version $version, $rawInput)
+    {
+        $packet = new static($version);
+        static::checkRawInputValidControlPackageType($rawInput);
+        return $packet;
+    }
+
+    protected static function checkRawInputValidControlPackageType($rawInput)
+    {
+        if (!$rawInput{1} === static::getControlPacketType()) {
+            throw new \RuntimeException('raw input is not valid for this control packet');
+        }
+    }
+
+    /** @return null */
+    abstract public static function getControlPacketType();
 
     public function getIdentifier()
     {
@@ -43,16 +64,30 @@ class ControlPacket implements Message {
         return strlen($this->payload);
     }
 
+    protected function getPayload()
+    {
+        return $this->payload;
+    }
+
+    protected function getRemainingLength()
+    {
+        return strlen($this->getVariableHeader()) + $this->getPayloadLength();
+    }
+
+    /**
+     * @return string
+     */
     protected function getFixedHeader()
     {
-        $contentLength = $this->getPayloadLength();
-        if (!is_null($this->getVariableHeader())) {
-            $contentLength += strlen($this->getVariableHeader());
-        }
+        // Figure 3.8
+        $byte1 = static::getControlPacketType() << 4;
+        $byte1 = $this->addReservedBitsToFixedHeaderControlPacketType($byte1);
 
-        return chr($this->command)
-             . chr($contentLength)
-            ;
+        $byte2 = $this->getRemainingLength();
+
+        return chr($byte1)
+             . chr($byte2);
+             ;
     }
 
     /**
@@ -64,23 +99,9 @@ class ControlPacket implements Message {
     }
 
     /**
-     * @return string
-     */
-    public function get()
-    {
-        $return = $this->getFixedHeader();
-        if (!is_null($this->getVariableHeader())) {
-            $return .= $this->getVariableHeader();
-        }
-        $return .= $this->payload;
-
-        return $return;
-    }
-
-    /**
      * @param $stringToAdd
      */
-    public function addToPayLoad($stringToAdd)
+    public function addRawToPayLoad($stringToAdd)
     {
         $this->payload .= $stringToAdd;
     }
@@ -92,7 +113,7 @@ class ControlPacket implements Message {
     public function addLengthPrefixedField($fieldPayload)
     {
         $return = $this->getLengthPrefixField($fieldPayload);
-        $this->addToPayLoad($return);
+        $this->addRawToPayLoad($return);
     }
 
     public function getLengthPrefixField($fieldPayload)
@@ -105,5 +126,56 @@ class ControlPacket implements Message {
         $return .= $fieldPayload;
         return $return;
     }
+
+    /**
+     * @return int
+     */
+    protected function getControlPacketTypeAsByte()
+    {
+        return static::getControlPacketType() << 4;
+    }
+
+    public function get()
+    {
+        $fullMessage = '';
+
+        // add fixed header
+        if ($this->useFixedHeader) {
+            $fullMessage .= $this->getFixedHeader();
+        }
+
+        // add variable header
+        if ($this->useVariableHeader) {
+            $fullMessage .= $this->getVariableHeader();
+        }
+
+        // add payload
+        $fullMessage .= $this->getPayload();
+
+        return $fullMessage;
+    }
+
+    /**
+     * @param $byte1
+     * @return $byte1 unmodified
+     */
+    protected function addReservedBitsToFixedHeaderControlPacketType($byte1)
+    {
+        return $byte1;
+    }
+
+    /**
+     * @param int $startIndex
+     * @param string $rawInput
+     * @return string
+     */
+    protected function getPayloadLengthPrefixFieldInRawInput($startIndex, $rawInput)
+    {
+        $headerLength = 2;
+        $header = substr($rawInput, $startIndex, $headerLength);
+        $lengthOfMessage = ord($header{1});
+        return substr($rawInput, $startIndex + $headerLength, $lengthOfMessage);
+    }
+
 
 }

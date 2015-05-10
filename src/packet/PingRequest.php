@@ -12,11 +12,10 @@ use oliverlorenz\reactphpmqtt\protocol\Version;
 class PingRequest extends ControlPacket {
 
     protected $useVariableHeader = true;
+    protected $containsPacketIdentifierFiled = false;
 
-    const COMMAND = 0xc0;
-
-    public function __construct(Version $version)
+    public static function getControlPacketType()
     {
-        parent::__construct($version, static::COMMAND);
+        return ControlPacketType::PINGREQ;
     }
 }

@@ -9,18 +9,12 @@ namespace oliverlorenz\reactphpmqtt\packet;
 
 use oliverlorenz\reactphpmqtt\protocol\Version;
 
-class PingResponse implements Message {
+class PingResponse extends ControlPacket {
 
-    const IDENTIFIER = 0xD0;
+    protected $containsPacketIdentifierFiled = false;
 
-    public function __construct(Version $version, $input)
+    public static function getControlPacketType()
     {
-        $this->version = $version;
-        $this->input = $input;
-    }
-
-    public function getIdentifier()
-    {
-        return static::IDENTIFIER;
+        return ControlPacketType::PINGRESP;
     }
 }

@@ -11,13 +11,19 @@ use oliverlorenz\reactphpmqtt\protocol\Version;
 
 class Subscribe extends ControlPacket {
 
-    const COMMAND = 0x80;
+    protected $topicFilters = array();
 
-    protected $topic;
+    protected $useVariableHeader = true;
+    protected $containsPacketIdentifierFiled = true;
 
-    public function __construct(Version $version, $topic)
+    public static function getControlPacketType()
     {
-        parent::__construct($version, static::COMMAND);
+        return ControlPacketType::SUBSCRIBE;
+    }
+
+    protected function addReservedBitsToFixedHeaderControlPacketType($byte1)
+    {
+        return $byte1 + 2;
     }
 
     /**
@@ -25,10 +31,18 @@ class Subscribe extends ControlPacket {
      */
     protected function getVariableHeader()
     {
-        return $this->getLengthPrefixField($this->topic)
-        // keep alive
-        . chr(0x00)
-        . chr(0x0a)
-            ;
+        return chr(0)
+             . chr(10)
+        ;
+    }
+
+    /**
+     * @param string $topic
+     * @param int $qos
+     */
+    public function addSubscription($topic, $qos = 0)
+    {
+        $this->payload .= $this->getLengthPrefixField($topic);
+        $this->payload .= chr($qos);
     }
 }

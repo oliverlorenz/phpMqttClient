@@ -2,6 +2,8 @@
 
 reactMqtt is a mqtt client library PHP. Its based on the reactPHP socket-client and added the mqtt protocol specific functions. I hope its a better starting point that the existing php mqtt libraries. 
 
+![build status](https://travis-ci.org/oliverlorenz/reactphpmqtt.svg)
+
 ### Notice - (May 6th, 2015)
 This is the first initial commit. Only some things work already:
 * Connect
@@ -35,5 +37,8 @@ $connector->onConnected(function() use ($connector) {
 });
 $loop->run();
 
-
 ```
+
+#Troubleshooting
+## Why does the connect to localhost:1883 not work?
+The answer is simple: In the example is the DNS 8.8.8.8 configured. Your local server is not visible for them, so you can't connect.

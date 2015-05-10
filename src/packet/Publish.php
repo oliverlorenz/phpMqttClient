@@ -11,22 +11,55 @@ use oliverlorenz\reactphpmqtt\protocol\Version;
 
 class Publish extends ControlPacket {
 
-    const COMMAND = 0x30;
-
     protected $messageId;
+
+    /** @var string $message */
+    protected $message = null;
 
     protected $topic;
 
-    public function __construct(Version $version, $messageId)
+    protected $useVariableHeader = true;
+    protected $containsPacketIdentifierFiled = false; // TODO QOS Table 2.5
+
+    /** @var null|\DateTime $receiveTimestamp */
+    protected $receiveTimestamp = null;
+
+    public static function getControlPacketType()
     {
-        parent::__construct($version, static::COMMAND);
-        $this->messageId = $messageId;
+        return ControlPacketType::PUBLISH;
     }
+
+    public function __construct(Version $version)
+    {
+        parent::__construct($version);
+    }
+
+    public static function parse(Version $version, $rawInput)
+    {
+        /** @var Publish $packet */
+        $packet = parent::parse($version, $rawInput);
+        $topic = static::getPayloadLengthPrefixFieldInRawInput(2, $rawInput);
+        $packet->setTopic($topic);
+        $packet->setReceiveTimestamp(new \DateTime());
+        $packet->setMessage(
+            substr(
+                $rawInput,
+                4 + strlen($topic)
+            )
+        );
+        return $packet;
+    }
+
 
     public function setTopic($topic)
     {
         $this->topic = $topic;
         return $this;
+    }
+
+    public function setMessageId($messageId)
+    {
+        $this->messageId = $messageId;
     }
 
     /**
@@ -39,5 +72,21 @@ class Publish extends ControlPacket {
         . chr(0x00)
         . chr(0x0a)
             ;
+    }
+
+    /**
+     * @param \DateTime $dateTime
+     */
+    private function setReceiveTimestamp($dateTime)
+    {
+        $this->receiveTimestamp = $dateTime;
+    }
+
+    /**
+     * @param string $message
+     */
+    private function setMessage($message)
+    {
+        $this->message = $message;
     }
 }

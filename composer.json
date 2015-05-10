@@ -16,5 +16,8 @@
     "minimum-stability": "dev",
     "require": {
         "react/react": "0.5.*@dev"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.6.*"
     }
 }

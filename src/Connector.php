@@ -7,6 +7,7 @@
 
 namespace oliverlorenz\reactphpmqtt;
 
+use oliverlorenz\reactphpmqtt\packet\Subscribe;
 use React\Dns\Resolver\Resolver;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\Timer;
@@ -35,6 +36,8 @@ class Connector implements \React\SocketClient\ConnectorInterface {
         $this->socketConnector = new \React\SocketClient\Connector($loop, $resolver);
     }
 
+    protected $onPublishReceived;
+
     /**
      * @return Stream
      */
@@ -56,6 +59,11 @@ class Connector implements \React\SocketClient\ConnectorInterface {
         $this->onConnected = $function;
     }
 
+    public function onPublishReceived(callable $function)
+    {
+        $this->onPublishReceived = $function;
+    }
+
     public function __destruct()
     {
         $this->disconnect();
@@ -70,17 +78,17 @@ class Connector implements \React\SocketClient\ConnectorInterface {
     {
         return $this->socketConnector->create($host, $port)->then(
             function (Stream $stream) {
-                $this->connect($stream);
+                $this->connect($stream, 'testclientuu');
                 $stream->on('data', function ($data) use($stream) {
                     try {
-                        $message = Factory::get($this->version,$data);
-                        switch ($message->getIdentifier()) {
-                            case ConnectionAck::IDENTIFIER:
-                                $stream->emit('CONNECTION_ACK', array('message' => $message));
-                                break;
-                            case PingResponse::IDENTIFIER:
-                                $stream->emit('PING_RESPONSE', array('message' => $message));
-                                break;
+                        $message = Factory::getByMessage($this->version,$data);
+                        $this->ascii_to_dec($data);
+                        if ($message instanceof ConnectionAck) {
+                            $stream->emit('CONNECTION_ACK', array('message' => $message));
+                        } elseif ($message instanceof PingResponse) {
+                            $stream->emit('PING_RESPONSE', array('message' => $message));
+                        } elseif ($message instanceof Publish) {
+                            $stream->emit('PUBLISH_RECEIVED', array('message' => $message));
                         }
                     } catch (\InvalidArgumentException $ex) {
 
@@ -90,8 +98,13 @@ class Connector implements \React\SocketClient\ConnectorInterface {
                 $stream->on('CONNECTION_ACK', function($message) use ($stream) {
                     $this->stream = $stream;
                     $onConnected = $this->onConnected;
-                    $onConnected();
-                    // $this->disconnect();
+                    $onConnected($message);
+                });
+
+                $stream->on('PUBLISH_RECEIVED', function($data) use ($stream) {
+                    $this->stream = $stream;
+                    $onPublishReceived = $this->onPublishReceived;
+                    $onPublishReceived($data['message']);
                 });
 
                 // alive ping
@@ -112,13 +125,25 @@ class Connector implements \React\SocketClient\ConnectorInterface {
         $stream->write($message);
     }
 
-    public function connect(Stream $stream)
+    public function connect(Stream $stream, $clientId = null)
     {
-        $packet = new Connect($this->version);
-        $packet->addLengthPrefixedField(substr(md5(microtime(true)), 1, 23));
+        $packet = new Connect($this->version, $clientId);
         $message = $packet->get();
         $this->ascii_to_dec($message);
         $stream->write($message);
+    }
+
+    /**
+     * @param string $topic
+     * @param int $qos
+     */
+    public function subscribe($topic, $qos = 0)
+    {
+        $packet = new Subscribe($this->version);
+        $packet->addSubscription($topic, $qos);
+        $message = $packet->get();
+        $this->ascii_to_dec($message);
+        $this->getStream()->write($message);
     }
 
     public function disconnect()
@@ -133,9 +158,10 @@ class Connector implements \React\SocketClient\ConnectorInterface {
 
     public function publish($topic, $message)
     {
-        $packet = new Publish($this->version, 1);
+        $packet = new Publish($this->version);
         $packet->setTopic($topic);
-        $packet->addToPayLoad($message);
+        $packet->setMessageId(1);
+        $packet->addRawToPayLoad($message);
         $message = $packet->get();
         $this->ascii_to_dec($message);
         $this->getStream()->write($message);
@@ -143,6 +169,7 @@ class Connector implements \React\SocketClient\ConnectorInterface {
 
     function ascii_to_dec($str)
     {
+        $str = (string) $str;
         echo "+-----+------+-------+-----+\n";
         echo "| idx | byte | ascii | dec |\n";
         echo "+-----+------+-------+-----+\n";

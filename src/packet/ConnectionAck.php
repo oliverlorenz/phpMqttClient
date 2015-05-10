@@ -9,18 +9,19 @@ namespace oliverlorenz\reactphpmqtt\packet;
 
 use oliverlorenz\reactphpmqtt\protocol\Version;
 
-class ConnectionAck implements Message {
+class ConnectionAck extends ControlPacket {
 
-    const IDENTIFIER = 0x20;
+    protected $useVariableHeader = false;
+    protected $containsPacketIdentifierFiled = false;
+
+    public static function getControlPacketType()
+    {
+        return ControlPacketType::CONNACK;
+    }
 
     public function __construct(Version $version, $input)
     {
         $this->version = $version;
         $this->input = $input;
-    }
-
-    public function getIdentifier()
-    {
-        return static::IDENTIFIER;
     }
 }
