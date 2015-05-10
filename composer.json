@@ -18,6 +18,7 @@
         "react/react": "0.5.*@dev"
     },
     "require-dev": {
-        "phpunit/phpunit": "4.6.*"
+        "phpunit/phpunit": "4.6.*",
+        "codeclimate/php-test-reporter": "dev-master"
     }
 }
