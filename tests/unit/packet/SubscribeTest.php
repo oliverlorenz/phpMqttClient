@@ -14,7 +14,7 @@ class SubscribeTest extends PHPUnit_Framework_TestCase {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
         $packet = new \oliverlorenz\reactphpmqtt\packet\Subscribe($version);
         $this->assertEquals(
-            $packet->getControlPacketType(),
+            \oliverlorenz\reactphpmqtt\packet\Subscribe::getControlPacketType(),
             8
         );
     }

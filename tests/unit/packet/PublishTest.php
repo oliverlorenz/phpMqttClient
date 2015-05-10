@@ -12,7 +12,7 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
         $packet = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
         $this->assertEquals(
-            $packet->getControlPacketType(),
+            \oliverlorenz\reactphpmqtt\packet\Publish::getControlPacketType(),
             3
         );
     }

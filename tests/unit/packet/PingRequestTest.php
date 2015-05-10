@@ -12,7 +12,7 @@ class PingRequestTest extends PHPUnit_Framework_TestCase {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
         $packet = new \oliverlorenz\reactphpmqtt\packet\PingRequest($version);
         $this->assertEquals(
-            $packet->getControlPacketType(),
+            \oliverlorenz\reactphpmqtt\packet\PingRequest::getControlPacketType(),
             12
         );
     }

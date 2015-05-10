@@ -12,7 +12,7 @@ class SubscribeAckTest extends PHPUnit_Framework_TestCase {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
         $packet = new \oliverlorenz\reactphpmqtt\packet\SubscribeAck($version);
         $this->assertEquals(
-            $packet->getControlPacketType(),
+            \oliverlorenz\reactphpmqtt\packet\SubscribeAck::getControlPacketType(),
             9
         );
     }
