@@ -14,7 +14,7 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
         $packet = new \oliverlorenz\reactphpmqtt\packet\Connect($version);
         $this->assertEquals(
-            $packet->getControlPacketType(),
+            \oliverlorenz\reactphpmqtt\packet\Connect::getControlPacketType(),
             1
         );
     }
