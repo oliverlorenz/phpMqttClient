@@ -52,7 +52,9 @@ abstract class ControlPacket implements Message {
     }
 
     /** @return null */
-    abstract public static function getControlPacketType();
+    public static function getControlPacketType() {
+        throw new \RuntimeException('you should overwrite getControlPacketType()');
+    }
 
     public function getIdentifier()
     {
