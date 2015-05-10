@@ -6,4 +6,4 @@ php:
 
 script:
   - composer install
-  - php vendor/bin/phpunit --coverage-text
+  - php vendor/bin/phpunit --coverage-text --configuration tests/phpunit.xml --bootstrap tests/bootstrap.php tests/
