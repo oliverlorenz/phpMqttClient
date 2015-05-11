@@ -9,11 +9,6 @@ namespace oliverlorenz\reactphpmqtt\packet;
 
 class MessageHelper {
 
-    public static function rawStringToReadable($str)
-    {
-        echo static::getReadableByRawString($str);
-    }
-
     /**
      * @param $message
      * @return string
