@@ -15,7 +15,7 @@ Currently works:
 
 ## Goal
 
-Goal of this project is easy to use mqtt client for PHP in a modern architecture. Currently, only protocol version 4 (mqtt 3.1.1) is implemented.
+Goal of this project is easy to use mqtt client for PHP in a modern architecture without using any php modules. Currently, only protocol version 4 (mqtt 3.1.1) is implemented.
 * Protocol specifications: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/csprd02/mqtt-v3.1.1-csprd02.html
 
 ## Example publish
