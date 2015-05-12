@@ -161,7 +161,7 @@ abstract class ControlPacket implements Message {
      * @param $byte1
      * @return $byte1 unmodified
      */
-    protected static function addReservedBitsToFixedHeaderControlPacketType($byte1)
+    protected function addReservedBitsToFixedHeaderControlPacketType($byte1)
     {
         return $byte1;
     }
@@ -171,7 +171,7 @@ abstract class ControlPacket implements Message {
      * @param string $rawInput
      * @return string
      */
-    protected function getPayloadLengthPrefixFieldInRawInput($startIndex, $rawInput)
+    protected static function getPayloadLengthPrefixFieldInRawInput($startIndex, $rawInput)
     {
         $headerLength = 2;
         $header = substr($rawInput, $startIndex, $headerLength);
