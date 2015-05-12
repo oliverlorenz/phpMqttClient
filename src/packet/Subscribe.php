@@ -14,7 +14,6 @@ class Subscribe extends ControlPacket {
     protected $topicFilters = array();
 
     protected $useVariableHeader = true;
-    protected $containsPacketIdentifierFiled = true;
 
     public static function getControlPacketType()
     {

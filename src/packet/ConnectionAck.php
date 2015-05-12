@@ -12,7 +12,6 @@ use oliverlorenz\reactphpmqtt\protocol\Version;
 class ConnectionAck extends ControlPacket {
 
     protected $useVariableHeader = false;
-    protected $containsPacketIdentifierFiled = false;
 
     public static function getControlPacketType()
     {

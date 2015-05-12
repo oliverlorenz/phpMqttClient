@@ -11,7 +11,6 @@ namespace oliverlorenz\reactphpmqtt\packet;
 class PublishRelease extends ControlPacket {
 
     protected $useVariableHeader = true;
-    protected $containsPacketIdentifierFiled = true;
 
     public static function getControlPacketType()
     {

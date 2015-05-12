@@ -14,9 +14,6 @@ class Connect extends ControlPacket {
     /** @var bool */
     protected $useVariableHeader = true;
 
-    /** @var bool */
-    protected $containsPacketIdentifierFiled = false;
-
     /** @var null|string */
     protected $clientId = null;
 

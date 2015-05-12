@@ -19,7 +19,6 @@ class Publish extends ControlPacket {
     protected $topic;
 
     protected $useVariableHeader = true;
-    protected $containsPacketIdentifierFiled = false; // TODO QOS Table 2.5
 
     /** @var null|\DateTime $receiveTimestamp */
     protected $receiveTimestamp = null;

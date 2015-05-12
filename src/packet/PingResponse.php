@@ -11,8 +11,6 @@ use oliverlorenz\reactphpmqtt\protocol\Version;
 
 class PingResponse extends ControlPacket {
 
-    protected $containsPacketIdentifierFiled = false;
-
     public static function getControlPacketType()
     {
         return ControlPacketType::PINGRESP;
