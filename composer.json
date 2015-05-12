@@ -1,5 +1,5 @@
 {
-    "name": "oliverlorenz/phpMqttClient",
+    "name": "oliverlorenz/php-mqtt-client",
     "description": "a mqtt client library for php",
     "keywords": ["mqtt", "IoT"],
     "authors": [
