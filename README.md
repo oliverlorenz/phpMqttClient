@@ -2,7 +2,7 @@
 
 phpMqttClient is a mqtt client library for PHP. Its based on the reactPHP socket-client and added the mqtt protocol specific functions. I hope its a better starting point that the existing php mqtt libraries. 
 
-[![Build Status](https://travis-ci.org/oliverlorenz/reactphpmqtt.svg?branch=master)](https://travis-ci.org/oliverlorenz/reactphpmqtt) [![Code Climate](https://codeclimate.com/github/oliverlorenz/reactphpmqtt/badges/gpa.svg)](https://codeclimate.com/github/oliverlorenz/reactphpmqtt) [![Test Coverage](https://codeclimate.com/github/oliverlorenz/reactphpmqtt/badges/coverage.svg)](https://codeclimate.com/github/oliverlorenz/reactphpmqtt/coverage)
+[![Build Status](https://travis-ci.org/oliverlorenz/phpMqttClient.svg?branch=master)](https://travis-ci.org/oliverlorenz/phpMqttClient) [![Code Climate](https://codeclimate.com/github/oliverlorenz/phpMqttClient/badges/gpa.svg)](https://codeclimate.com/github/oliverlorenz/phpMqttClient) [![Test Coverage](https://codeclimate.com/github/oliverlorenz/phpMqttClient/badges/coverage.svg)](https://codeclimate.com/github/oliverlorenz/phpMqttClient/coverage)
 
 ### Notice - (May 12th, 2015)
 This is library is not stable currently. Its an early state, but I am working on it. I will add more features if I need them. If you need features: please give feedback or contribute to get this library running.
