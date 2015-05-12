@@ -84,11 +84,11 @@ class Connector implements \React\SocketClient\ConnectorInterface {
                         $message = Factory::getByMessage($this->version,$data);
                         $this->ascii_to_dec($data);
                         if ($message instanceof ConnectionAck) {
-                            $stream->emit('CONNECTION_ACK', array('message' => $message));
+                            $stream->emit('CONNECTION_ACK', array($message));
                         } elseif ($message instanceof PingResponse) {
-                            $stream->emit('PING_RESPONSE', array('message' => $message));
+                            $stream->emit('PING_RESPONSE', array($message));
                         } elseif ($message instanceof Publish) {
-                            $stream->emit('PUBLISH_RECEIVED', array('message' => $message));
+                            $stream->emit('PUBLISH_RECEIVED', array($message));
                         }
                     } catch (\InvalidArgumentException $ex) {
 
@@ -101,10 +101,14 @@ class Connector implements \React\SocketClient\ConnectorInterface {
                     $onConnected($message);
                 });
 
-                $stream->on('PUBLISH_RECEIVED', function($data) use ($stream) {
+                $stream->on('PUBLISH_RECEIVED', function($message) use ($stream) {
+                    /** @var Stream stream */
+                    /** @var Publish $message */
                     $this->stream = $stream;
-                    $onPublishReceived = $this->onPublishReceived;
-                    $onPublishReceived($data['message']);
+                    if (!is_null($this->onPublishReceived)) {
+                        $onPublishReceived = $this->onPublishReceived;
+                        $onPublishReceived($message);
+                    }
                 });
 
                 // alive ping

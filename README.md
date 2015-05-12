@@ -4,8 +4,14 @@ reactMqtt is a mqtt client library PHP. Its based on the reactPHP socket-client 
 
 [![Build Status](https://travis-ci.org/oliverlorenz/reactphpmqtt.svg?branch=master)](https://travis-ci.org/oliverlorenz/reactphpmqtt) [![Code Climate](https://codeclimate.com/github/oliverlorenz/reactphpmqtt/badges/gpa.svg)](https://codeclimate.com/github/oliverlorenz/reactphpmqtt) [![Test Coverage](https://codeclimate.com/github/oliverlorenz/reactphpmqtt/badges/coverage.svg)](https://codeclimate.com/github/oliverlorenz/reactphpmqtt/coverage)
 
-### Notice - (May 10th, 2015)
+### Notice - (May 12th, 2015)
 This is library is not stable currently. Its an early state, but I am working on it. I will add more features if I need them. If you need features: please give feedback or contribute to get this library running.
+
+Currently works:
+* connect (clean session, no other connect flags)
+* disconnect
+* publish
+* subscribe
 
 ## Goal
 
@@ -18,6 +24,8 @@ Goal of this project is easy to use mqtt client for PHP in a modern architecture
 
 require __DIR__ . '/../vendor/autoload.php';
 
+$config = include('config.php');
+
 $loop = React\EventLoop\Factory::create();
 
 $dnsResolverFactory = new React\Dns\Resolver\Factory();
@@ -26,13 +34,39 @@ $resolver = $dnsResolverFactory->createCached('8.8.8.8', $loop);
 $version = new oliverlorenz\reactphpmqtt\protocol\Version4();
 $connector = new oliverlorenz\reactphpmqtt\Connector($loop, $resolver, $version);
 
-$connector->create('yourmqttserver.tdl', 1883);
+$connector->create($config['server'], 1883);
 $connector->onConnected(function() use ($connector) {
     $connector->publish('a/b', 'example message');
 });
 $loop->run();
-
 ```
+## Example subscribe
+```
+<?php
+
+require __DIR__ . '/../vendor/autoload.php';
+
+$config = include('config.php');
+
+$loop = React\EventLoop\Factory::create();
+
+$dnsResolverFactory = new React\Dns\Resolver\Factory();
+$resolver = $dnsResolverFactory->createCached('8.8.8.8', $loop);
+
+$version = new oliverlorenz\reactphpmqtt\protocol\Version4();
+$connector = new oliverlorenz\reactphpmqtt\Connector($loop, $resolver, $version);
+
+$connector->create($config['server'], 1883);
+$connector->onConnected(function() use ($connector) {
+    $connector->subscribe('a/b', 0);
+    $connector->subscribe('a/c', 0);
+});
+$connector->onPublishReceived(function($message) {
+    print_r($message);
+});
+$loop->run();
+```
+
 
 #Troubleshooting
 ## Why does the connect to localhost:1883 not work?
