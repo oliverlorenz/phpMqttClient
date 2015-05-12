@@ -161,7 +161,7 @@ abstract class ControlPacket implements Message {
      * @param $byte1
      * @return $byte1 unmodified
      */
-    protected function addReservedBitsToFixedHeaderControlPacketType($byte1)
+    protected static function addReservedBitsToFixedHeaderControlPacketType($byte1)
     {
         return $byte1;
     }
