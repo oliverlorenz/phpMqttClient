@@ -1,0 +1,13 @@
+languages:
+  PHP: true
+exclude_paths:
+ - examples/*
+ - tests/*
+ - vendor/*
+ - .gitignore
+ - .travis.yml
+ - codeclimate.yml
+ - composer.json
+ - composer.lock
+ - LICENCE.md
+ - README.md
