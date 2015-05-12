@@ -7,10 +7,14 @@
 
 class DisconnectTest extends PHPUnit_Framework_TestCase {
 
-    public function testTest()
+    public function testPublishStandard()
     {
-        // TODO real test
-        $this->assertTrue(true);
+        $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
+        $packet = new \oliverlorenz\reactphpmqtt\packet\Disconnect($version);
+        $this->assertEquals(
+            \oliverlorenz\reactphpmqtt\packet\Disconnect::getControlPacketType(),
+            14
+        );
     }
 
 }

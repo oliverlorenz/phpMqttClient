@@ -13,7 +13,7 @@ class Unsubscribe extends ControlPacket {
     protected $useVariableHeader = true;
     protected $containsPacketIdentifierFiled = true;
 
-    public function getControlPacketType()
+    public static function getControlPacketType()
     {
         return ControlPacketType::UNSUBSCRIBE;
     }
