@@ -53,5 +53,28 @@ class FactoryTest extends PHPUnit_Framework_TestCase {
         $this->assertInstanceOf('\oliverlorenz\reactphpmqtt\packet\SubscribeAck', $message);
     }
 
+    public function testGetByMessagePublish()
+    {
+        $version = new Version4();
+        $message = Factory::getByMessage(
+            $version,
+            chr(ControlPacketType::PUBLISH << 4) .
+            "............"
+        );
+        $this->assertInstanceOf('\oliverlorenz\reactphpmqtt\packet\Publish', $message);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testGetByMessageNoInput()
+    {
+        $version = new Version4();
+        $message = Factory::getByMessage(
+            $version,
+            ''
+        );
+    }
+
 
 }

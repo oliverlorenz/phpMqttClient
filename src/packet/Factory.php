@@ -33,7 +33,6 @@ class Factory {
                 break;
             case Publish::getControlPacketType():
                 $message = Publish::parse($version, $input);
-                print_r($message);
                 break;
             default:
                 throw new \RuntimeException('got message with control packet type ' . $packetControlType);
