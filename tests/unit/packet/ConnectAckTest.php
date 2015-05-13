@@ -9,7 +9,6 @@ class ConnectAckTest extends PHPUnit_Framework_TestCase {
 
     public function testTest()
     {
-        // TODO real test
         $this->assertTrue(true);
     }
 }
