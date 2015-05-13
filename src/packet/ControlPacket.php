@@ -10,7 +10,7 @@ namespace oliverlorenz\reactphpmqtt\packet;
 use oliverlorenz\reactphpmqtt\protocol\Version;
 use oliverlorenz\reactphpmqtt\protocol\Version4;
 
-abstract class ControlPacket implements Message {
+abstract class ControlPacket {
 
     protected $command;
 
@@ -54,11 +54,6 @@ abstract class ControlPacket implements Message {
     /** @return null */
     public static function getControlPacketType() {
         throw new \RuntimeException('you should overwrite getControlPacketType()');
-    }
-
-    public function getIdentifier()
-    {
-        return $this->identifier;
     }
 
     protected function getPayloadLength()
@@ -127,14 +122,6 @@ abstract class ControlPacket implements Message {
         $return .= chr($lsb);
         $return .= $fieldPayload;
         return $return;
-    }
-
-    /**
-     * @return int
-     */
-    protected function getControlPacketTypeAsByte()
-    {
-        return static::getControlPacketType() << 4;
     }
 
     public function get()

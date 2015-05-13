@@ -72,13 +72,31 @@ class Connector implements \React\SocketClient\ConnectorInterface {
     /**
      * @param $host
      * @param $port
+     * @param string|null $username
+     * @param string|null $password
+     * @param string|null $clientId
+     * @param bool|null $cleanSession
+     * @param string|null $willTopic
+     * @param string|null $willMessage
+     * @param int $willQos
+     * @param bool|null $willRetain
      * @return null|\React\Promise\FulfilledPromise|\React\Promise\Promise|\React\Promise\RejectedPromise|static
      */
-    public function create($host, $port)
-    {
+    public function create(
+        $host,
+        $port,
+        $username = null,
+        $password = null,
+        $clientId = null,
+        $cleanSession = true,
+        $willTopic = null,
+        $willMessage = null,
+        $willQos = 0,
+        $willRetain = null
+    ) {
         return $this->socketConnector->create($host, $port)->then(
-            function (Stream $stream) {
-                $this->connect($stream, 'testclientuu');
+            function (Stream $stream) use ($username, $password, $clientId, $cleanSession, $willTopic, $willMessage, $willQos, $willRetain) {
+                $this->connect($stream, $username, $password, $clientId, $cleanSession, $willTopic, $willMessage, $willQos, $willRetain);
                 $stream->on('data', function ($data) use($stream) {
                     try {
                         $message = Factory::getByMessage($this->version,$data);
@@ -129,9 +147,26 @@ class Connector implements \React\SocketClient\ConnectorInterface {
         $stream->write($message);
     }
 
-    public function connect(Stream $stream, $clientId = null)
-    {
-        $packet = new Connect($this->version, $clientId);
+    public function connect(
+        Stream $stream,
+        $username,
+        $password,
+        $clientId,
+        $cleanSession,
+        $willFlag,
+        $willQos,
+        $willRetain
+    ) {
+        $packet = new Connect(
+            $this->version,
+            $username,
+            $password,
+            $clientId,
+            $cleanSession,
+            $willFlag,
+            $willQos,
+            $willRetain
+        );
         $message = $packet->get();
         $this->ascii_to_dec($message);
         $stream->write($message);
