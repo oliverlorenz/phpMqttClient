@@ -11,9 +11,6 @@ use oliverlorenz\reactphpmqtt\protocol\Version;
 
 class Disconnect extends ControlPacket
 {
-    const COMMAND = 0xe0;
-    protected $useVariableHeader = false;
-
     public static function getControlPacketType()
     {
         return ControlPacketType::DISCONNECT;

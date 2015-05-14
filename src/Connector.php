@@ -7,6 +7,7 @@
 
 namespace oliverlorenz\reactphpmqtt;
 
+use oliverlorenz\reactphpmqtt\packet\MessageHelper;
 use oliverlorenz\reactphpmqtt\packet\Subscribe;
 use React\Dns\Resolver\Resolver;
 use React\EventLoop\LoopInterface;
@@ -100,7 +101,8 @@ class Connector implements \React\SocketClient\ConnectorInterface {
                 $stream->on('data', function ($data) use($stream) {
                     try {
                         $message = Factory::getByMessage($this->version,$data);
-                        $this->ascii_to_dec($data);
+                        echo "received:\n";
+                        echo MessageHelper::getReadableByRawString($data);
                         if ($message instanceof ConnectionAck) {
                             $stream->emit('CONNECTION_ACK', array($message));
                         } elseif ($message instanceof PingResponse) {
@@ -117,6 +119,7 @@ class Connector implements \React\SocketClient\ConnectorInterface {
                     $this->stream = $stream;
                     $onConnected = $this->onConnected;
                     $onConnected($message);
+                    $this->registerSignalHandler();
                 });
 
                 $stream->on('PUBLISH_RECEIVED', function($message) use ($stream) {
@@ -143,8 +146,7 @@ class Connector implements \React\SocketClient\ConnectorInterface {
     {
         $packet = new PingRequest($this->version);
         $message = $packet->get();
-        $this->ascii_to_dec($message);
-        $stream->write($message);
+        $this->sendToStream($message);
     }
 
     public function connect(
@@ -173,6 +175,16 @@ class Connector implements \React\SocketClient\ConnectorInterface {
     }
 
     /**
+     * @param string $message
+     */
+    protected function sendToStream($message)
+    {
+        echo "send:\n";
+        echo MessageHelper::getReadableByRawString($message);
+        $this->getStream()->write($message);
+    }
+
+    /**
      * @param string $topic
      * @param int $qos
      */
@@ -181,18 +193,15 @@ class Connector implements \React\SocketClient\ConnectorInterface {
         $packet = new Subscribe($this->version);
         $packet->addSubscription($topic, $qos);
         $message = $packet->get();
-        $this->ascii_to_dec($message);
-        $this->getStream()->write($message);
+        $this->sendToStream($message);
     }
 
     public function disconnect()
     {
         $packet = new Disconnect($this->version);
         $message = $packet->get();
-        $this->ascii_to_dec($message);
-        $this->getStream()->write($message);
-
-        $this->socketConnector->getLoop()->stop();
+        $this->sendToStream($message);
+        $this->getStream()->close();
     }
 
     public function publish($topic, $message)
@@ -202,8 +211,7 @@ class Connector implements \React\SocketClient\ConnectorInterface {
         $packet->setMessageId(1);
         $packet->addRawToPayLoad($message);
         $message = $packet->get();
-        $this->ascii_to_dec($message);
-        $this->getStream()->write($message);
+        $this->sendToStream($message);
     }
 
     function ascii_to_dec($str)
@@ -220,5 +228,25 @@ class Connector implements \React\SocketClient\ConnectorInterface {
             echo "|\n";
         }
         echo "+-----+------+-------+-----+\n";
+    }
+
+    private function registerSignalHandler()
+    {
+        pcntl_signal(SIGTERM, array($this, "processSignal"));
+        pcntl_signal(SIGHUP,  array($this, "processSignal"));
+        pcntl_signal(SIGINT, array($this, "processSignal"));
+    }
+
+    public function processSignal($signo)
+    {
+        switch ($signo) {
+            case SIGTERM:
+            case SIGHUP:
+            case SIGINT:
+                $this->disconnect();
+            default:
+                // maybe more?
+        }
+        exit();
     }
 }
