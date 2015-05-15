@@ -114,6 +114,14 @@ class Publish extends ControlPacket {
         return $this;
     }
 
+    /**
+     * @return int
+     */
+    public function getQos()
+    {
+        return $this->qos;
+    }
+
 
     /**
      * @return string
