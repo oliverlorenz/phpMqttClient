@@ -8,6 +8,10 @@
 namespace oliverlorenz\reactphpmqtt;
 
 use oliverlorenz\reactphpmqtt\packet\MessageHelper;
+use oliverlorenz\reactphpmqtt\packet\PublishAck;
+use oliverlorenz\reactphpmqtt\packet\PublishComplete;
+use oliverlorenz\reactphpmqtt\packet\PublishReceived;
+use oliverlorenz\reactphpmqtt\packet\PublishRelease;
 use oliverlorenz\reactphpmqtt\packet\Subscribe;
 use React\Dns\Resolver\Resolver;
 use React\EventLoop\LoopInterface;
@@ -108,7 +112,11 @@ class Connector implements \React\SocketClient\ConnectorInterface {
                         } elseif ($message instanceof PingResponse) {
                             $stream->emit('PING_RESPONSE', array($message));
                         } elseif ($message instanceof Publish) {
+                            $stream->emit('PUBLISH', array($message));
+                        } elseif ($message instanceof PublishReceived) {
                             $stream->emit('PUBLISH_RECEIVED', array($message));
+                        } elseif ($message instanceof PublishRelease) {
+                            $stream->emit('PUBLISH_RELEASE', array($message));
                         }
                     } catch (\InvalidArgumentException $ex) {
 
@@ -122,14 +130,35 @@ class Connector implements \React\SocketClient\ConnectorInterface {
                     $this->registerSignalHandler();
                 });
 
-                $stream->on('PUBLISH_RECEIVED', function($message) use ($stream) {
+                $stream->on('PUBLISH', function($message) use ($stream) {
                     /** @var Stream stream */
                     /** @var Publish $message */
                     $this->stream = $stream;
+                    if ($message->getQos() == 1) {
+                        $pubAck = new PublishAck($this->version);
+                        $this->sendToStream($pubAck);
+                    } elseif ($message->getQos() == 2) {
+                        $pubRec = new PublishReceived($this->version);
+                        $this->sendToStream($pubRec);
+                    }
                     if (!is_null($this->onPublishReceived)) {
                         $onPublishReceived = $this->onPublishReceived;
                         $onPublishReceived($message);
                     }
+                });
+
+                $stream->on('PUBLISH_RECEIVED', function($message) use ($stream) {
+                    /** @var Stream stream */
+                    /** @var PublishReceived $message */
+                    $pubRel = new PublishRelease($this->version);
+                    $this->sendToStream($pubRel);
+                });
+
+                $stream->on('PUBLISH_RELEASE', function($message) use ($stream) {
+                    /** @var Stream stream */
+                    /** @var PublishRelease $message */
+                    $pubComp = new PublishComplete($this->version);
+                    $this->sendToStream($pubComp);
                 });
 
                 // alive ping
