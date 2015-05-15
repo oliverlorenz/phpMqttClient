@@ -9,8 +9,6 @@ class PublishTest extends PHPUnit_Framework_TestCase {
 
     public function testPublishStandard()
     {
-        $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
         $this->assertEquals(
             \oliverlorenz\reactphpmqtt\packet\Publish::getControlPacketType(),
             3
@@ -222,32 +220,21 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $this->assertInstanceOf('\oliverlorenz\reactphpmqtt\packet\Publish', $return);
     }
 
-    public function testParseWithQos0()
-    {
-        $input =
-            chr(48) .
-            chr(4) .
-            chr(0) .
-            chr(0) .
-            chr(0) .
-            chr(10)
-        ;
-        $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $parsedPacket = \oliverlorenz\reactphpmqtt\packet\Publish::parse($version, $input);
-
-        $comparisonPacket = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
-        $comparisonPacket->setQos(0);
-
-        $this->assertEquals(
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($parsedPacket->get()),
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($comparisonPacket->get())
+    public function qosProvider() {
+        return array(
+            array(0, 48),
+            array(1, 50),
+            array(2, 52),
         );
     }
 
-    public function testParseWithQos1()
+    /**
+     * @dataProvider qosProvider
+     */
+    public function testParseWithQos($qos, $bit)
     {
         $input =
-            chr(50) .
+            chr($bit) .
             chr(4) .
             chr(0) .
             chr(0) .
@@ -258,29 +245,7 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $parsedPacket = \oliverlorenz\reactphpmqtt\packet\Publish::parse($version, $input);
 
         $comparisonPacket = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
-        $comparisonPacket->setQos(1);
-
-        $this->assertEquals(
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($parsedPacket->get()),
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($comparisonPacket->get())
-        );
-    }
-
-    public function testParseWithQos2()
-    {
-        $input =
-            chr(52) .
-            chr(4) .
-            chr(0) .
-            chr(0) .
-            chr(0) .
-            chr(10)
-        ;
-        $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $parsedPacket = \oliverlorenz\reactphpmqtt\packet\Publish::parse($version, $input);
-
-        $comparisonPacket = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
-        $comparisonPacket->setQos(2);
+        $comparisonPacket->setQos($qos);
 
         $this->assertEquals(
             \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($parsedPacket->get()),
