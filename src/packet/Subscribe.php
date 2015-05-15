@@ -20,7 +20,7 @@ class Subscribe extends ControlPacket {
         return ControlPacketType::SUBSCRIBE;
     }
 
-    protected static function addReservedBitsToFixedHeaderControlPacketType($byte1)
+    protected function addReservedBitsToFixedHeaderControlPacketType($byte1)
     {
         return $byte1 + 2;
     }
