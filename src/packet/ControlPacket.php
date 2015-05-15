@@ -148,7 +148,7 @@ abstract class ControlPacket {
      * @param $byte1
      * @return $byte1 unmodified
      */
-    protected static function addReservedBitsToFixedHeaderControlPacketType($byte1)
+    protected function addReservedBitsToFixedHeaderControlPacketType($byte1)
     {
         return $byte1;
     }

@@ -204,15 +204,19 @@ class Connector implements \React\SocketClient\ConnectorInterface {
         $this->getStream()->close();
     }
 
-    public function publish($topic, $message)
+    public function publish($topic, $message, $qos = 0, $dup = false)
     {
         $packet = new Publish($this->version);
         $packet->setTopic($topic);
         $packet->setMessageId(1);
+        $packet->setQos($qos);
+        $packet->setDup($dup);
         $packet->addRawToPayLoad($message);
         $message = $packet->get();
         $this->sendToStream($message);
     }
+
+
 
     function ascii_to_dec($str)
     {
