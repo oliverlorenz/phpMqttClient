@@ -8,7 +8,7 @@
 namespace oliverlorenz\reactphpmqtt\packet;
 
 
-class PublishReceived {
+class PublishReceived extends ControlPacket {
 
     protected $useVariableHeader = true;
 

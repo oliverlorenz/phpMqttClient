@@ -17,4 +17,12 @@ class Unsubscribe extends ControlPacket {
         return ControlPacketType::UNSUBSCRIBE;
     }
 
+    /**
+     * @param string $topic
+     */
+    public function removeSubscription($topic)
+    {
+        $this->payload .= $this->getLengthPrefixField($topic);
+    }
+
 }

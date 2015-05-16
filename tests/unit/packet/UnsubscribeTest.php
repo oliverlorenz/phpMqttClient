@@ -16,4 +16,9 @@ class UnsubscribeTest extends PHPUnit_Framework_TestCase {
             10
         );
     }
+
+    public function testUnsubscribe()
+    {
+
+    }
 }

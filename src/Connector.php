@@ -13,6 +13,8 @@ use oliverlorenz\reactphpmqtt\packet\PublishComplete;
 use oliverlorenz\reactphpmqtt\packet\PublishReceived;
 use oliverlorenz\reactphpmqtt\packet\PublishRelease;
 use oliverlorenz\reactphpmqtt\packet\Subscribe;
+use oliverlorenz\reactphpmqtt\packet\Unsubscribe;
+use oliverlorenz\reactphpmqtt\packet\UnsubscribeAck;
 use React\Dns\Resolver\Resolver;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\Timer;
@@ -117,6 +119,8 @@ class Connector implements \React\SocketClient\ConnectorInterface {
                             $stream->emit('PUBLISH_RECEIVED', array($message));
                         } elseif ($message instanceof PublishRelease) {
                             $stream->emit('PUBLISH_RELEASE', array($message));
+                        } elseif ($message instanceof UnsubscribeAck) {
+                            $stream->emit('UNSUBSCRIBE_ACK', array($message));
                         }
                     } catch (\InvalidArgumentException $ex) {
 
@@ -136,10 +140,10 @@ class Connector implements \React\SocketClient\ConnectorInterface {
                     $this->stream = $stream;
                     if ($message->getQos() == 1) {
                         $pubAck = new PublishAck($this->version);
-                        $this->sendToStream($pubAck);
+                        $this->sendToStream($pubAck->get());
                     } elseif ($message->getQos() == 2) {
                         $pubRec = new PublishReceived($this->version);
-                        $this->sendToStream($pubRec);
+                        $this->sendToStream($pubRec->get());
                     }
                     if (!is_null($this->onPublishReceived)) {
                         $onPublishReceived = $this->onPublishReceived;
@@ -151,14 +155,14 @@ class Connector implements \React\SocketClient\ConnectorInterface {
                     /** @var Stream stream */
                     /** @var PublishReceived $message */
                     $pubRel = new PublishRelease($this->version);
-                    $this->sendToStream($pubRel);
+                    $this->sendToStream($pubRel->get());
                 });
 
                 $stream->on('PUBLISH_RELEASE', function($message) use ($stream) {
                     /** @var Stream stream */
                     /** @var PublishRelease $message */
                     $pubComp = new PublishComplete($this->version);
-                    $this->sendToStream($pubComp);
+                    $this->sendToStream($pubComp->get());
                 });
 
                 // alive ping
@@ -221,6 +225,17 @@ class Connector implements \React\SocketClient\ConnectorInterface {
     {
         $packet = new Subscribe($this->version);
         $packet->addSubscription($topic, $qos);
+        $message = $packet->get();
+        $this->sendToStream($message);
+    }
+
+    /**
+     * @param string $topic
+     */
+    public function unsubscribe($topic)
+    {
+        $packet = new Unsubscribe($this->version);
+        $packet->removeSubscription($topic);
         $message = $packet->get();
         $this->sendToStream($message);
     }

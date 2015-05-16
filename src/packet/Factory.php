@@ -34,8 +34,17 @@ class Factory {
             case Publish::getControlPacketType():
                 $message = Publish::parse($version, $input);
                 break;
+            case PublishComplete::getControlPacketType():
+                $message = PublishComplete::parse($version, $input);
+                break;
+            case PublishRelease::getControlPacketType():
+                $message = PublishRelease::parse($version, $input);
+                break;
+            case PublishReceived::getControlPacketType():
+                $message = PublishReceived::parse($version, $input);
+                break;
             default:
-                throw new \RuntimeException('got message with control packet type ' . $packetControlType);
+                throw new \InvalidArgumentException('got message with control packet type ' . $packetControlType);
             }
         return $message;
     }
