@@ -12,7 +12,7 @@ use \oliverlorenz\reactphpmqtt\packet\ControlPacketType;
 class FactoryTest extends PHPUnit_Framework_TestCase {
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException InvalidArgumentException
      */
     public function testGetByMessageUnknown()
     {

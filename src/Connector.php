@@ -37,6 +37,9 @@ class Connector implements \React\SocketClient\ConnectorInterface {
     protected $stream;
     protected $onConnected;
 
+    protected $pingedBack = null;
+    protected $messageCounter = 1;
+
     public function __construct(LoopInterface $loop, Resolver $resolver, Version $version)
     {
         $this->version = $version;
@@ -165,10 +168,20 @@ class Connector implements \React\SocketClient\ConnectorInterface {
                     $this->sendToStream($pubComp->get());
                 });
 
+                $stream->on('PING_RESPONSE', function($message) use ($stream) {
+                    $this->pingedBack = true;
+                });
+
                 // alive ping
                 $this->socketConnector->getLoop()->addPeriodicTimer(10, function(Timer $timer) use ($stream) {
                     if ($this->isConnected()) {
-                        $this->ping($stream);
+                   //     if (is_null($this->pingedBack) || $this->pingedBack === true) {
+                            $this->ping($stream);
+                   //         $this->pingedBack = false;
+                   //     } else if ($this->pingedBack === false) {
+                   //         $this->disconnect();
+                   //         $this->connect($this->stream);
+                   //     }
                     }
                 });
             }
@@ -184,13 +197,14 @@ class Connector implements \React\SocketClient\ConnectorInterface {
 
     public function connect(
         Stream $stream,
-        $username,
-        $password,
-        $clientId,
-        $cleanSession,
-        $willFlag,
-        $willQos,
-        $willRetain
+        $username = null,
+        $password = null,
+        $clientId = null,
+        $cleanSession = true,
+        $willTopic = null,
+        $willMessage = null,
+        $willQos = null,
+        $willRetain = null
     ) {
         $packet = new Connect(
             $this->version,
@@ -198,7 +212,8 @@ class Connector implements \React\SocketClient\ConnectorInterface {
             $password,
             $clientId,
             $cleanSession,
-            $willFlag,
+            $willTopic,
+            $willMessage,
             $willQos,
             $willRetain
         );
@@ -252,7 +267,7 @@ class Connector implements \React\SocketClient\ConnectorInterface {
     {
         $packet = new Publish($this->version);
         $packet->setTopic($topic);
-        $packet->setMessageId(1);
+        $packet->setMessageId($this->messageCounter++);
         $packet->setQos($qos);
         $packet->setDup($dup);
         $packet->addRawToPayLoad($message);
