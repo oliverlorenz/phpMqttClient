@@ -107,28 +107,30 @@ class Connector implements \React\SocketClient\ConnectorInterface {
         return $this->socketConnector->create($host, $port)->then(
             function (Stream $stream) use ($username, $password, $clientId, $cleanSession, $willTopic, $willMessage, $willQos, $willRetain) {
                 $this->connect($stream, $username, $password, $clientId, $cleanSession, $willTopic, $willMessage, $willQos, $willRetain);
-                $stream->on('data', function ($data) use($stream) {
-                    try {
-                        $message = Factory::getByMessage($this->version,$data);
-                        echo "received:\n";
-                        echo MessageHelper::getReadableByRawString($data);
-                        if ($message instanceof ConnectionAck) {
-                            $stream->emit('CONNECTION_ACK', array($message));
-                        } elseif ($message instanceof PingResponse) {
-                            $stream->emit('PING_RESPONSE', array($message));
-                        } elseif ($message instanceof Publish) {
-                            $stream->emit('PUBLISH', array($message));
-                        } elseif ($message instanceof PublishReceived) {
-                            $stream->emit('PUBLISH_RECEIVED', array($message));
-                        } elseif ($message instanceof PublishRelease) {
-                            $stream->emit('PUBLISH_RELEASE', array($message));
-                        } elseif ($message instanceof UnsubscribeAck) {
-                            $stream->emit('UNSUBSCRIBE_ACK', array($message));
+                $stream->on('data', function ($rawData) use($stream) {
+                    $messages = $this->getSplittedMessage($rawData);
+                    foreach ($messages as $data) {
+                        try {
+                            $message = Factory::getByMessage($this->version, $data);
+                            echo "received " . get_class($message) . "\n";
+                            //echo MessageHelper::getReadableByRawString($data);
+                            if ($message instanceof ConnectionAck) {
+                                $stream->emit('CONNECTION_ACK', array($message));
+                            } elseif ($message instanceof PingResponse) {
+                                $stream->emit('PING_RESPONSE', array($message));
+                            } elseif ($message instanceof Publish) {
+                                $stream->emit('PUBLISH', array($message));
+                            } elseif ($message instanceof PublishReceived) {
+                                $stream->emit('PUBLISH_RECEIVED', array($message));
+                            } elseif ($message instanceof PublishRelease) {
+                                $stream->emit('PUBLISH_RELEASE', array($message));
+                            } elseif ($message instanceof UnsubscribeAck) {
+                                $stream->emit('UNSUBSCRIBE_ACK', array($message));
+                            }
+                        } catch (\InvalidArgumentException $ex) {
+
                         }
-                    } catch (\InvalidArgumentException $ex) {
-
                     }
-
                 });
                 $stream->on('CONNECTION_ACK', function($message) use ($stream) {
                     $this->stream = $stream;
@@ -142,11 +144,11 @@ class Connector implements \React\SocketClient\ConnectorInterface {
                     /** @var Publish $message */
                     $this->stream = $stream;
                     if ($message->getQos() == 1) {
-                        $pubAck = new PublishAck($this->version);
-                        $this->sendToStream($pubAck->get());
+                        $packet = new PublishAck($this->version);
+                        $this->sentMessageToStream($packet);
                     } elseif ($message->getQos() == 2) {
-                        $pubRec = new PublishReceived($this->version);
-                        $this->sendToStream($pubRec->get());
+                        $packet = new PublishReceived($this->version);
+                        $this->sentMessageToStream($packet);
                     }
                     if (!is_null($this->onPublishReceived)) {
                         $onPublishReceived = $this->onPublishReceived;
@@ -157,15 +159,15 @@ class Connector implements \React\SocketClient\ConnectorInterface {
                 $stream->on('PUBLISH_RECEIVED', function($message) use ($stream) {
                     /** @var Stream stream */
                     /** @var PublishReceived $message */
-                    $pubRel = new PublishRelease($this->version);
-                    $this->sendToStream($pubRel->get());
+                    $packet = new PublishRelease($this->version);
+                    $this->sentMessageToStream($packet);
                 });
 
                 $stream->on('PUBLISH_RELEASE', function($message) use ($stream) {
                     /** @var Stream stream */
                     /** @var PublishRelease $message */
-                    $pubComp = new PublishComplete($this->version);
-                    $this->sendToStream($pubComp->get());
+                    $packet = new PublishComplete($this->version);
+                    $this->sentMessageToStream($packet);
                 });
 
                 $stream->on('PING_RESPONSE', function($message) use ($stream) {
@@ -191,8 +193,7 @@ class Connector implements \React\SocketClient\ConnectorInterface {
     public function ping(Stream $stream)
     {
         $packet = new PingRequest($this->version);
-        $message = $packet->get();
-        $this->sendToStream($message);
+        $this->sentMessageToStream($packet);
     }
 
     public function connect(
@@ -218,7 +219,7 @@ class Connector implements \React\SocketClient\ConnectorInterface {
             $willRetain
         );
         $message = $packet->get();
-        $this->ascii_to_dec($message);
+        echo MessageHelper::getReadableByRawString($message);
         $stream->write($message);
     }
 
@@ -227,9 +228,15 @@ class Connector implements \React\SocketClient\ConnectorInterface {
      */
     protected function sendToStream($message)
     {
-        echo "send:\n";
-        echo MessageHelper::getReadableByRawString($message);
+        //echo MessageHelper::getReadableByRawString($message);
         $this->getStream()->write($message);
+    }
+
+    protected function sentMessageToStream($controlPacket)
+    {
+        echo "send: " . get_class($controlPacket) . "\n";
+        $message = $controlPacket->get();
+        $this->sendToStream($message);
     }
 
     /**
@@ -240,8 +247,7 @@ class Connector implements \React\SocketClient\ConnectorInterface {
     {
         $packet = new Subscribe($this->version);
         $packet->addSubscription($topic, $qos);
-        $message = $packet->get();
-        $this->sendToStream($message);
+        $this->sentMessageToStream($packet);
     }
 
     /**
@@ -251,15 +257,13 @@ class Connector implements \React\SocketClient\ConnectorInterface {
     {
         $packet = new Unsubscribe($this->version);
         $packet->removeSubscription($topic);
-        $message = $packet->get();
-        $this->sendToStream($message);
+        $this->sentMessageToStream($packet);
     }
 
     public function disconnect()
     {
         $packet = new Disconnect($this->version);
-        $message = $packet->get();
-        $this->sendToStream($message);
+        $this->sentMessageToStream($packet);
         $this->getStream()->close();
     }
 
@@ -271,33 +275,14 @@ class Connector implements \React\SocketClient\ConnectorInterface {
         $packet->setQos($qos);
         $packet->setDup($dup);
         $packet->addRawToPayLoad($message);
-        $message = $packet->get();
-        $this->sendToStream($message);
-    }
-
-
-
-    function ascii_to_dec($str)
-    {
-        $str = (string) $str;
-        echo "+-----+------+-------+-----+\n";
-        echo "| idx | byte | ascii | dec |\n";
-        echo "+-----+------+-------+-----+\n";
-        for ($i = 0, $j = strlen($str); $i < $j; $i++) {
-            echo '| ' . str_pad($i, 4, ' ');
-            echo '| ' . str_pad($i+1, 5, ' ');
-            echo '| ' . str_pad((ord($str{$i}) > 32 ? $str{$i} : ("(" . ord($str{$i})) . ")"), 6, ' ');
-            echo '| ' . str_pad(ord($str{$i}), 4, ' ');
-            echo "|\n";
-        }
-        echo "+-----+------+-------+-----+\n";
+        $this->sentMessageToStream($packet);
     }
 
     private function registerSignalHandler()
     {
-        pcntl_signal(SIGTERM, array($this, "processSignal"));
-        pcntl_signal(SIGHUP,  array($this, "processSignal"));
-        pcntl_signal(SIGINT, array($this, "processSignal"));
+        // pcntl_signal(SIGTERM, array($this, "processSignal"));
+        // pcntl_signal(SIGHUP,  array($this, "processSignal"));
+        // pcntl_signal(SIGINT, array($this, "processSignal"));
     }
 
     public function processSignal($signo)
@@ -311,5 +296,22 @@ class Connector implements \React\SocketClient\ConnectorInterface {
                 // maybe more?
         }
         exit();
+    }
+
+    private function getSplittedMessage($data)
+    {
+        $messages = array();
+        while(true) {
+            if (isset($data{1})) {
+                $length = ord($data{1});
+                $messages[] = substr($data, 0, $length + 2);
+                $data = substr($data, $length + 2);
+            }
+
+            if (empty($data)) {
+                break;
+            }
+        }
+        return $messages;
     }
 }

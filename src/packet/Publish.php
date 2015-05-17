@@ -128,11 +128,7 @@ class Publish extends ControlPacket {
      */
     protected function getVariableHeader()
     {
-        return $this->getLengthPrefixField($this->topic)
-        // keep alive
-        . chr(0x00)
-        . chr(0x0a)
-            ;
+        return $this->getLengthPrefixField($this->topic);
     }
 
     /**

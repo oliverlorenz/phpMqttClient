@@ -23,11 +23,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(
             \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString(
                 chr(52) .
-                chr(4) .
+                chr(2) .
                 chr(0) .
                 chr(0) .
-                chr(0) .
-                chr(10) .
                 chr(49)
             ),
             \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($packet->get() . 1)
@@ -42,11 +40,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(
             \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString(
                 chr(50) .
-                chr(4) .
+                chr(2) .
                 chr(0) .
                 chr(0) .
-                chr(0) .
-                chr(10) .
                 chr(49)
             ),
             \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($packet->get() . 1)
@@ -61,11 +57,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(
             \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString(
                 chr(48) .
-                chr(4) .
+                chr(2) .
                 chr(0) .
                 chr(0) .
-                chr(0) .
-                chr(10) .
                 chr(49)
             ),
             \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($packet->get() . 1)
@@ -80,11 +74,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(
             \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString(
                 chr(56) .
-                chr(4) .
+                chr(2) .
                 chr(0) .
                 chr(0) .
-                chr(0) .
-                chr(10) .
                 chr(49)
             ),
             \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($packet->get() . 1)
@@ -99,11 +91,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(
             \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString(
                 chr(49) .
-                chr(4) .
+                chr(2) .
                 chr(0) .
                 chr(0) .
-                chr(0) .
-                chr(10) .
                 chr(49)
             ),
             \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($packet->get() . 1)
