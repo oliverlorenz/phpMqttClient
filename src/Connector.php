@@ -40,10 +40,16 @@ class Connector implements \React\SocketClient\ConnectorInterface {
     protected $pingedBack = null;
     protected $messageCounter = 1;
 
+    /**
+     * @var $loop LoopInterface
+     */
+    protected $loop;
+
     public function __construct(LoopInterface $loop, Resolver $resolver, Version $version)
     {
         $this->version = $version;
         $this->socketConnector = new \React\SocketClient\Connector($loop, $resolver);
+        $this->loop = $loop;
     }
 
     protected $onPublishReceived;
@@ -313,5 +319,13 @@ class Connector implements \React\SocketClient\ConnectorInterface {
             }
         }
         return $messages;
+    }
+
+    /**
+     * @return LoopInterface
+     */
+    public function getLoop()
+    {
+        return $this->loop;
     }
 }
