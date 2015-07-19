@@ -118,8 +118,8 @@ class Connector implements \React\SocketClient\ConnectorInterface {
                     foreach ($messages as $data) {
                         try {
                             $message = Factory::getByMessage($this->version, $data);
-                            echo "received " . get_class($message) . "\n";
-                            //echo MessageHelper::getReadableByRawString($data);
+                            echo "received:\t" . get_class($message) . "\n";
+                            // echo MessageHelper::getReadableByRawString($data);
                             if ($message instanceof ConnectionAck) {
                                 $stream->emit('CONNECTION_ACK', array($message));
                             } elseif ($message instanceof PingResponse) {
@@ -181,7 +181,7 @@ class Connector implements \React\SocketClient\ConnectorInterface {
                 });
 
                 // alive ping
-                $this->socketConnector->getLoop()->addPeriodicTimer(10, function(Timer $timer) use ($stream) {
+                $this->getLoop()->addPeriodicTimer(10, function(Timer $timer) use ($stream) {
                     if ($this->isConnected()) {
                    //     if (is_null($this->pingedBack) || $this->pingedBack === true) {
                             $this->ping($stream);
@@ -240,7 +240,7 @@ class Connector implements \React\SocketClient\ConnectorInterface {
 
     protected function sentMessageToStream($controlPacket)
     {
-        echo "send: " . get_class($controlPacket) . "\n";
+        echo "send:\t\t" . get_class($controlPacket) . "\n";
         $message = $controlPacket->get();
         $this->sendToStream($message);
     }
@@ -270,7 +270,7 @@ class Connector implements \React\SocketClient\ConnectorInterface {
     {
         $packet = new Disconnect($this->version);
         $this->sentMessageToStream($packet);
-        $this->getStream()->close();
+        $this->getLoop()->stop();
     }
 
     public function publish($topic, $message, $qos = 0, $dup = false)
@@ -286,9 +286,11 @@ class Connector implements \React\SocketClient\ConnectorInterface {
 
     private function registerSignalHandler()
     {
-        // pcntl_signal(SIGTERM, array($this, "processSignal"));
-        // pcntl_signal(SIGHUP,  array($this, "processSignal"));
-        // pcntl_signal(SIGINT, array($this, "processSignal"));
+        /*
+        pcntl_signal(SIGTERM, array($this, "processSignal"));
+        pcntl_signal(SIGHUP,  array($this, "processSignal"));
+        pcntl_signal(SIGINT, array($this, "processSignal"));
+        */
     }
 
     public function processSignal($signo)
