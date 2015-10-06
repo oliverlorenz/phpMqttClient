@@ -2,6 +2,8 @@
     "name": "oliverlorenz/php-mqtt-client",
     "description": "a mqtt client library for php",
     "keywords": ["mqtt", "IoT"],
+    "licence": "LGPL",
+    "minimum-stability": "dev",
     "authors": [
         {
             "name": "Oliver Lorenz",
@@ -14,7 +16,7 @@
         }
     },
     "require": {
-        "react/react": "0.5.0@dev"
+        "react/react": "0.5.*"
     },
     "require-dev": {
         "phpunit/phpunit": "4.6.*",

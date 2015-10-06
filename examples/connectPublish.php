@@ -15,8 +15,8 @@ $connector = new oliverlorenz\reactphpmqtt\Connector($loop, $resolver, $version)
 $connector->create($config['server'], 1883);
 $connector->onConnected(function() use ($connector) {
     $i = 0;
-    // for($i = 0; $i < 300; $i++) {
-    $connector->publish('a/b', 'example message');
+    // for($i = 0; $i < 300; $i++)
+        $connector->publish('a/b', 'example message');
 
 });
 $loop->run();
