@@ -29,9 +29,10 @@ use oliverlorenz\reactphpmqtt\packet\Publish;
 use oliverlorenz\reactphpmqtt\protocol\Version;
 use React\Promise\Deferred;
 use React\Promise\FulfilledPromise;
+use React\SocketClient\ConnectorInterface;
 use React\Stream\Stream;
 
-class Connector implements \React\SocketClient\ConnectorInterface {
+class Connector implements ConnectorInterface {
 
     protected $socketConnector;
     protected $version;
