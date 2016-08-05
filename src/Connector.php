@@ -7,6 +7,7 @@
 
 namespace oliverlorenz\reactphpmqtt;
 
+use oliverlorenz\reactphpmqtt\packet\ConnectionOptions;
 use oliverlorenz\reactphpmqtt\packet\MessageHelper;
 use oliverlorenz\reactphpmqtt\packet\PublishAck;
 use oliverlorenz\reactphpmqtt\packet\PublishComplete;
@@ -29,6 +30,7 @@ use oliverlorenz\reactphpmqtt\packet\Publish;
 use oliverlorenz\reactphpmqtt\protocol\Version;
 use React\Promise\Deferred;
 use React\Promise\FulfilledPromise;
+use React\Promise\PromiseInterface;
 use React\SocketClient\ConnectorInterface;
 use React\Stream\Stream;
 
@@ -90,34 +92,38 @@ class Connector implements ConnectorInterface {
     }
 
     /**
-     * @param $host
-     * @param $port
-     * @param string|null $username
-     * @param string|null $password
-     * @param string|null $clientId
-     * @param bool|null $cleanSession
-     * @param string|null $willTopic
-     * @param string|null $willMessage
-     * @param int $willQos
-     * @param bool|null $willRetain
-     * @return null|\React\Promise\FulfilledPromise|\React\Promise\Promise|\React\Promise\RejectedPromise|static
+     * Creates a new connection
+     *
+     * @param string $host
+     * @param integer $port [optional]
+     * @param ConnectionOptions $options [optional]
+     *
+     * @return PromiseInterface Resolves to a \React\Stream\Stream once a connection has been established
      */
     public function create(
         $host,
         $port = 1883,
-        $username = null,
-        $password = null,
-        $clientId = null,
-        $cleanSession = true,
-        $willTopic = null,
-        $willMessage = null,
-        $willQos = 0,
-        $willRetain = null
+        ConnectionOptions $options = null
     ) {
+        // Set default connection options, if none provided
+        if(!isset($options)){
+            $options = $this->getDefaultConnectionOptions();
+        }
+
         return $this->socketConnector->create($host, $port)
             ->then(
-                function (Stream $stream) use ($username, $password, $clientId, $cleanSession, $willTopic, $willMessage, $willQos, $willRetain) {
-                    return $this->connect($stream, $username, $password, $clientId, $cleanSession, $willTopic, $willMessage, $willQos, $willRetain);
+                function (Stream $stream) use ($options) {
+                    return $this->connect(
+                        $stream,
+                        $options->username,
+                        $options->password,
+                        $options->clientId,
+                        $options->cleanSession,
+                        $options->willTopic,
+                        $options->willMessage,
+                        $options->willQos,
+                        $options->willRetain
+                    );
                 }
             )
             ->then(
@@ -319,5 +325,15 @@ class Connector implements ConnectorInterface {
     public function getLoop()
     {
         return $this->loop;
+    }
+
+    /**
+     * Returns default connection options
+     *
+     * @return ConnectionOptions
+     */
+    protected function getDefaultConnectionOptions()
+    {
+        return new ConnectionOptions();
     }
 }
