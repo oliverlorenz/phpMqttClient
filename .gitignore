@@ -2,3 +2,4 @@
 .idea
 old*
 examples/config.php
+composer.lock
