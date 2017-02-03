@@ -43,7 +43,7 @@ $connector->onConnected(function() use ($connector) {
 $loop->run();
 ```
 ## Example subscribe
-```
+```php
 <?php
 
 require __DIR__ . '/../vendor/autoload.php';
