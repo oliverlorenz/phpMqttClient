@@ -84,7 +84,6 @@ abstract class ControlPacket {
 
         return chr($byte1)
              . chr($byte2);
-             ;
     }
 
     /**
