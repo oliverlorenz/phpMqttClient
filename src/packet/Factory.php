@@ -12,41 +12,33 @@ class Factory {
     /**
      * @param $version
      * @param $input
-     * @return null|ControlPacket
+     * @throws \InvalidArgumentException
+     * @return ControlPacket
      */
     public static function getByMessage($version, $input)
     {
-        $message = null;
         if(empty($input)) {
-            throw new \InvalidArgumentException();
+            throw new \InvalidArgumentException('input empty');
         }
         $packetControlType = ord($input{0}) >> 4;
         switch ($packetControlType) {
             case ConnectionAck::getControlPacketType():
-                $message = new ConnectionAck($version, $input);
-                break;
+                return new ConnectionAck($version, $input);
             case PingResponse::getControlPacketType():
-                $message = new PingResponse($version, $input);
-                break;
+                return new PingResponse($version, $input);
             case SubscribeAck::getControlPacketType():
-                $message = new SubscribeAck($version, $input);
-                break;
+                return new SubscribeAck($version, $input);
             case Publish::getControlPacketType():
-                $message = Publish::parse($version, $input);
-                break;
+                return Publish::parse($version, $input);
             case PublishComplete::getControlPacketType():
-                $message = PublishComplete::parse($version, $input);
-                break;
+                return PublishComplete::parse($version, $input);
             case PublishRelease::getControlPacketType():
-                $message = PublishRelease::parse($version, $input);
-                break;
+                return PublishRelease::parse($version, $input);
             case PublishReceived::getControlPacketType():
-                $message = PublishReceived::parse($version, $input);
-                break;
-            default:
-                throw new \InvalidArgumentException('got message with control packet type ' . $packetControlType);
-            }
-        return $message;
+                return PublishReceived::parse($version, $input);
+        }
+
+        throw new \InvalidArgumentException('got message with control packet type ' . $packetControlType);
     }
 
 }
