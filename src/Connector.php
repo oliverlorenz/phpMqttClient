@@ -7,8 +7,16 @@
 
 namespace oliverlorenz\reactphpmqtt;
 
+use oliverlorenz\reactphpmqtt\packet\Connect;
+use oliverlorenz\reactphpmqtt\packet\ConnectionAck;
 use oliverlorenz\reactphpmqtt\packet\ConnectionOptions;
+use oliverlorenz\reactphpmqtt\packet\ControlPacket;
+use oliverlorenz\reactphpmqtt\packet\Disconnect;
+use oliverlorenz\reactphpmqtt\packet\Factory;
 use oliverlorenz\reactphpmqtt\packet\MessageHelper;
+use oliverlorenz\reactphpmqtt\packet\PingRequest;
+use oliverlorenz\reactphpmqtt\packet\PingResponse;
+use oliverlorenz\reactphpmqtt\packet\Publish;
 use oliverlorenz\reactphpmqtt\packet\PublishAck;
 use oliverlorenz\reactphpmqtt\packet\PublishComplete;
 use oliverlorenz\reactphpmqtt\packet\PublishReceived;
@@ -17,17 +25,10 @@ use oliverlorenz\reactphpmqtt\packet\Subscribe;
 use oliverlorenz\reactphpmqtt\packet\SubscribeAck;
 use oliverlorenz\reactphpmqtt\packet\Unsubscribe;
 use oliverlorenz\reactphpmqtt\packet\UnsubscribeAck;
+use oliverlorenz\reactphpmqtt\protocol\Version;
 use React\Dns\Resolver\Resolver;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\Timer;
-use oliverlorenz\reactphpmqtt\packet\Connect;
-use oliverlorenz\reactphpmqtt\packet\ConnectionAck;
-use oliverlorenz\reactphpmqtt\packet\Disconnect;
-use oliverlorenz\reactphpmqtt\packet\Factory;
-use oliverlorenz\reactphpmqtt\packet\PingRequest;
-use oliverlorenz\reactphpmqtt\packet\PingResponse;
-use oliverlorenz\reactphpmqtt\packet\Publish;
-use oliverlorenz\reactphpmqtt\protocol\Version;
 use React\Promise\Deferred;
 use React\Promise\FulfilledPromise;
 use React\Promise\PromiseInterface;
@@ -180,6 +181,9 @@ class Connector implements ConnectorInterface {
         $this->sentMessageToStream($stream, $packet);
     }
 
+    /**
+     * @return \React\Promise\Promise
+     */
     public function connect(
         Stream $stream,
         $username = null,
@@ -224,7 +228,7 @@ class Connector implements ConnectorInterface {
         return $stream->write($message);
     }
 
-    protected function sentMessageToStream(Stream $stream, $controlPacket)
+    protected function sentMessageToStream(Stream $stream, ControlPacket $controlPacket)
     {
         echo "send:\t\t" . get_class($controlPacket) . "\n";
         $message = $controlPacket->get();
@@ -239,7 +243,6 @@ class Connector implements ConnectorInterface {
      */
     public function subscribe(Stream $stream, $topic, $qos = 0)
     {
-        $deferred = new Deferred();
         $packet = new Subscribe($this->version);
         $packet->addSubscription($topic, $qos);
         $this->sentMessageToStream($stream, $packet);
@@ -252,7 +255,9 @@ class Connector implements ConnectorInterface {
     }
 
     /**
+     * @param Stream $stream
      * @param string $topic
+     * @return \React\Promise\Promise
      */
     public function unsubscribe(Stream $stream, $topic)
     {
@@ -275,6 +280,9 @@ class Connector implements ConnectorInterface {
         return new FulfilledPromise($stream);
     }
 
+    /**
+     * @return \React\Promise\Promise
+     */
     public function publish(Stream $stream, $topic, $message, $qos = 0, $dup = false)
     {
         $deferred = new Deferred();
