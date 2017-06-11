@@ -14,7 +14,7 @@ $connector = new oliverlorenz\reactphpmqtt\Connector($loop, $resolver, $version)
 
 $p = $connector->create($config['server'], $config['port'], $config['options']);
 $p->then(function(\React\Stream\Stream $stream) use ($connector) {
-    return $connector->publish($stream, 'a/b', 'example message');
+    return $connector->publish($stream, 'hello/world', 'example message');
 });
 
 $loop->run();
