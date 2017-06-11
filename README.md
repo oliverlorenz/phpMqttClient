@@ -36,7 +36,7 @@ $resolver = $dnsResolverFactory->createCached('8.8.8.8', $loop);
 $version = new oliverlorenz\reactphpmqtt\protocol\Version4();
 $connector = new oliverlorenz\reactphpmqtt\Connector($loop, $resolver, $version);
 
-$p = $connector->create($config['server'], 1883);
+$p = $connector->create($config['server'], $config['port'], $config['options']);
 $p->then(function(\React\Stream\Stream $stream) use ($connector) {
     return $connector->publish($stream, 'a/b', 'example message');
 });
@@ -58,7 +58,7 @@ $resolver = $dnsResolverFactory->createCached('8.8.8.8', $loop);
 $version = new oliverlorenz\reactphpmqtt\protocol\Version4();
 $connector = new oliverlorenz\reactphpmqtt\Connector($loop, $resolver, $version);
 
-$p = $connector->create($config['server'], 1883);
+$p = $connector->create($config['server'], $config['port'], $config['options']);
 $p->then(function(\React\Stream\Stream $stream) use ($connector) {
     $connector->subscribe($stream, 'a/b', 0);
     $connector->subscribe($stream, 'a/c', 0);
