@@ -2,6 +2,8 @@
 
 $config = array(
     'server' => 'yourMqttBroker.tld',
+    'port' => 1883,
+    'options' => null,
 );
 
 return $config;
