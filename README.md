@@ -21,6 +21,7 @@ Goal of this project is easy to use MQTT client for PHP in a modern architecture
 * Protocol specifications: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/csprd02/mqtt-v3.1.1-csprd02.html
 
 ## Example publish
+
 ```php
 <?php
 
@@ -42,7 +43,9 @@ $p->then(function(\React\Stream\Stream $stream) use ($connector) {
 });
 $loop->run();
 ```
+
 ## Example subscribe
+
 ```php
 <?php
 
@@ -69,7 +72,13 @@ $connector->onPublishReceived(function($message) {
 $loop->run();
 ```
 
+# Run tests
 
-#Troubleshooting
+    ./vendor/bin/phpunit -c ./tests/phpunit.xml ./tests
+
+
+# Troubleshooting
+
 ## Why does the connect to localhost:1883 not work?
+
 The answer is simple: In the example is the DNS 8.8.8.8 configured. Your local server is not visible for them, so you can't connect.
