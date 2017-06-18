@@ -7,8 +7,6 @@
 
 namespace oliverlorenz\reactphpmqtt\packet;
 
-use oliverlorenz\reactphpmqtt\protocol\Version;
-
 /**
  * The PINGREQ Packet is sent from a Client to the Server. It can be used to:
  *   1. Indicate to the Server that the Client is alive in the absence of

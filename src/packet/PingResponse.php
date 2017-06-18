@@ -7,8 +7,6 @@
 
 namespace oliverlorenz\reactphpmqtt\packet;
 
-use oliverlorenz\reactphpmqtt\protocol\Version;
-
 /**
  * A PINGRESP Packet is sent by the Server to the Client in response
  * to a PINGREQ Packet. It indicates that the Server is alive.
