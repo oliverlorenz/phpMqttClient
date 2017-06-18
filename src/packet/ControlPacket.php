@@ -58,10 +58,10 @@ abstract class ControlPacket {
 
     protected function getPayloadLength()
     {
-        return strlen($this->payload);
+        return strlen($this->getPayload());
     }
 
-    protected function getPayload()
+    public function getPayload()
     {
         return $this->payload;
     }
@@ -104,7 +104,6 @@ abstract class ControlPacket {
 
     /**
      * @param $fieldPayload
-     * @return string
      */
     public function addLengthPrefixedField($fieldPayload)
     {

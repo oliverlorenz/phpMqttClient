@@ -13,9 +13,6 @@ class Publish extends ControlPacket {
 
     protected $messageId;
 
-    /** @var string $message */
-    protected $message = null;
-
     protected $topic;
 
     protected $qos = 0;
@@ -55,12 +52,11 @@ class Publish extends ControlPacket {
                 $packet->setQos(2);
             }
         }
-        $packet->setMessage(
-            substr(
-                $rawInput,
-                4 + strlen($topic)
-            )
+        $packet->payload = substr(
+            $rawInput,
+            4 + strlen($topic)
         );
+
         return $packet;
     }
 
@@ -115,6 +111,14 @@ class Publish extends ControlPacket {
     }
 
     /**
+     * @return string
+     */
+    public function getTopic()
+    {
+        return $this->topic;
+    }
+
+    /**
      * @return int
      */
     public function getQos()
@@ -137,14 +141,6 @@ class Publish extends ControlPacket {
     private function setReceiveTimestamp($dateTime)
     {
         $this->receiveTimestamp = $dateTime;
-    }
-
-    /**
-     * @param string $message
-     */
-    private function setMessage($message)
-    {
-        $this->message = $message;
     }
 
     protected function addReservedBitsToFixedHeaderControlPacketType($byte1)
