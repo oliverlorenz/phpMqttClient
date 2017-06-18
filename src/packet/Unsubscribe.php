@@ -7,7 +7,10 @@
 
 namespace oliverlorenz\reactphpmqtt\packet;
 
-
+/**
+ * An UNSUBSCRIBE Packet is sent by the Client to the Server, to
+ * unsubscribe from topics.
+ */
 class Unsubscribe extends ControlPacket {
 
     protected $useVariableHeader = true;

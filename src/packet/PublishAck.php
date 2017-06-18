@@ -7,7 +7,9 @@
 
 namespace oliverlorenz\reactphpmqtt\packet;
 
-
+/**
+ * A PUBACK Packet is the response to a PUBLISH Packet with QoS level 1.
+ */
 class PublishAck extends ControlPacket {
 
     protected $useVariableHeader = true;
@@ -16,5 +18,4 @@ class PublishAck extends ControlPacket {
     {
         return ControlPacketType::PUBACK;
     }
-
 }
