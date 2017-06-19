@@ -7,8 +7,10 @@
 
 namespace oliverlorenz\reactphpmqtt\packet;
 
-use oliverlorenz\reactphpmqtt\protocol\Version;
-
+/**
+ * The SUBSCRIBE Packet is sent from the Client to the Server to create
+ * one or more Subscriptions.
+ */
 class Subscribe extends ControlPacket {
 
     protected $topicFilters = array();
