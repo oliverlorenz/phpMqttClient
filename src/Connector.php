@@ -17,8 +17,8 @@ use oliverlorenz\reactphpmqtt\packet\MessageHelper;
 use oliverlorenz\reactphpmqtt\packet\PingRequest;
 use oliverlorenz\reactphpmqtt\packet\PingResponse;
 use oliverlorenz\reactphpmqtt\packet\Publish;
-use oliverlorenz\reactphpmqtt\packet\PublishAck;
-use oliverlorenz\reactphpmqtt\packet\PublishComplete;
+//use oliverlorenz\reactphpmqtt\packet\PublishAck;
+//use oliverlorenz\reactphpmqtt\packet\PublishComplete;
 use oliverlorenz\reactphpmqtt\packet\PublishReceived;
 use oliverlorenz\reactphpmqtt\packet\PublishRelease;
 use oliverlorenz\reactphpmqtt\packet\Subscribe;
@@ -37,20 +37,19 @@ use React\Stream\Stream;
 
 class Connector implements ConnectorInterface {
 
-    protected $socketConnector;
-    protected $version;
-    protected $isConnected = false;
-    /** @var Stream|null $stream */
-    protected $stream;
-    protected $onConnected;
-
-    protected $pingedBack = null;
-    protected $messageCounter = 1;
-
     /**
      * @var $loop LoopInterface
      */
     private $loop;
+    private $socketConnector;
+    private $version;
+//    protected $isConnected = false;
+//    /** @var Stream|null $stream */
+//    protected $stream;
+//    protected $onConnected;
+
+//    protected $pingedBack = null;
+    private $messageCounter = 1;
 
     public function __construct(LoopInterface $loop, Resolver $resolver, Version $version)
     {
@@ -59,33 +58,33 @@ class Connector implements ConnectorInterface {
         $this->loop = $loop;
     }
 
-    protected $onPublishReceived;
+//    protected $onPublishReceived;
 
-    /**
-     * @return Stream
-     */
-    public function getStream()
-    {
-        return $this->stream;
-    }
+//    /**
+//     * @return Stream
+//     */
+//    public function getStream()
+//    {
+//        return $this->stream;
+//    }
 
-    /**
-     * @return bool
-     */
-    public function isConnected()
-    {
-        return !is_null($this->stream);
-    }
+//    /**
+//     * @return bool
+//     */
+//    public function isConnected()
+//    {
+//        return !is_null($this->stream);
+//    }
 
-    public function onConnected(callable $function)
-    {
-        $this->onConnected = $function;
-    }
+//    public function onConnected(callable $function)
+//    {
+//        $this->onConnected = $function;
+//    }
 
-    public function onPublishReceived(callable $function)
-    {
-        $this->onPublishReceived = $function;
-    }
+//    public function onPublishReceived(callable $function)
+//    {
+//        $this->onPublishReceived = $function;
+//    }
 
 //    public function __destruct()
 //    {
