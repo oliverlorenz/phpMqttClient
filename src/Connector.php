@@ -112,22 +112,9 @@ class Connector implements ConnectorInterface {
         }
 
         return $this->socketConnector->create($host, $port)
-            ->then(
-                function (Stream $stream) use ($options) {
-                    return $this->connect(
-                        $stream,
-                        $options
-//                        $options->username,
-//                        $options->password,
-//                        $options->clientId,
-//                        $options->cleanSession,
-//                        $options->willTopic,
-//                        $options->willMessage,
-//                        $options->willQos,
-//                        $options->willRetain
-                    );
-                }
-            )
+            ->then(function (Stream $stream) use ($options) {
+                return $this->connect($stream, $options);
+            })
             ->then(function (Stream $stream) {
                 return $this->emitEvents($stream);
             })
@@ -170,6 +157,7 @@ class Connector implements ConnectorInterface {
         $stream->on('CONNECTION_ACK', function($message) use ($stream, $deferred) {
             $deferred->resolve($stream);
         });
+
         return $deferred->promise();
     }
 
@@ -177,17 +165,11 @@ class Connector implements ConnectorInterface {
     {
         $this->getLoop()->addPeriodicTimer(10, function(Timer $timer) use ($stream) {
             $packet = new PingRequest($this->version);
-            $this->sentMessageToStream($stream, $packet);
+            $this->sendPacketToStream($stream, $packet);
         });
 
         return new FulfilledPromise($stream);
     }
-
-//    public function ping(Stream $stream)
-//    {
-//        $packet = new PingRequest($this->version);
-//        $this->sentMessageToStream($stream, $packet);
-//    }
 
     /**
      * @return \React\Promise\Promise
@@ -227,21 +209,22 @@ class Connector implements ConnectorInterface {
         return $deferred->promise();
     }
 
-    /**
-     * @param Stream $stream
-     * @param $message
-     * @return bool|void
-     */
-    protected function sendToStream(Stream $stream, $message)
-    {
-        return $stream->write($message);
-    }
+//    /**
+//     * @param Stream $stream
+//     * @param $message
+//     * @return bool|void
+//     */
+//    protected function sendToStream(Stream $stream, $message)
+//    {
+//        return $stream->write($message);
+//    }
 
-    protected function sentMessageToStream(Stream $stream, ControlPacket $controlPacket)
+    private function sendPacketToStream(Stream $stream, ControlPacket $controlPacket)
     {
         echo "send:\t\t" . get_class($controlPacket) . "\n";
         $message = $controlPacket->get();
-        return $this->sendToStream($stream, $message);
+//        return $this->sendToStream($stream, $message);
+        return $stream->write($message);
     }
 
     /**
@@ -254,7 +237,7 @@ class Connector implements ConnectorInterface {
     {
         $packet = new Subscribe($this->version);
         $packet->addSubscription($topic, $qos);
-        $this->sentMessageToStream($stream, $packet);
+        $this->sendPacketToStream($stream, $packet);
 
         $deferred = new Deferred();
         $stream->on('SUBSCRIBE_ACK', function($message) use ($stream, $deferred) {
@@ -272,7 +255,7 @@ class Connector implements ConnectorInterface {
     {
         $packet = new Unsubscribe($this->version);
         $packet->removeSubscription($topic);
-        $this->sentMessageToStream($stream, $packet);
+        $this->sendPacketToStream($stream, $packet);
 
         $deferred = new Deferred();
         $stream->on('UNSUBSCRIBE_ACK', function($message) use ($stream, $deferred) {
@@ -284,7 +267,7 @@ class Connector implements ConnectorInterface {
     public function disconnect(Stream $stream)
     {
         $packet = new Disconnect($this->version);
-        $this->sentMessageToStream($stream, $packet);
+        $this->sendPacketToStream($stream, $packet);
         $this->getLoop()->stop();
         return new FulfilledPromise($stream);
     }
@@ -301,7 +284,7 @@ class Connector implements ConnectorInterface {
         $packet->setQos($qos);
         $packet->setDup($dup);
         $packet->addRawToPayLoad($message);
-        $success = $this->sentMessageToStream($stream, $packet);
+        $success = $this->sendPacketToStream($stream, $packet);
         if ($success) {
             $deferred->resolve($stream);
         } else {
