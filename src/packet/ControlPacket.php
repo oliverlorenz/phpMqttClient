@@ -8,13 +8,12 @@
 namespace oliverlorenz\reactphpmqtt\packet;
 
 use oliverlorenz\reactphpmqtt\protocol\Version;
-use oliverlorenz\reactphpmqtt\protocol\Version4;
 
 abstract class ControlPacket {
 
     protected $command;
 
-    /** @var $version Version4 */
+    /** @var $version Version */
     protected $version;
 
 
