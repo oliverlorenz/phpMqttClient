@@ -50,7 +50,7 @@ class Connector implements ConnectorInterface {
     /**
      * @var $loop LoopInterface
      */
-    protected $loop;
+    private $loop;
 
     public function __construct(LoopInterface $loop, Resolver $resolver, Version $version)
     {
@@ -87,10 +87,10 @@ class Connector implements ConnectorInterface {
         $this->onPublishReceived = $function;
     }
 
-    public function __destruct()
-    {
+//    public function __destruct()
+//    {
 //        $this->disconnect();
-    }
+//    }
 
     /**
      * Creates a new connection
@@ -126,7 +126,7 @@ class Connector implements ConnectorInterface {
     private function emitEvents(Stream $stream)
     {
         $stream->on('data', function ($rawData) use($stream) {
-            $messages = $this->getSplittedMessage($rawData);
+            $messages = $this->splitMessage($rawData);
             foreach ($messages as $data) {
                 try {
                     $message = Factory::getByMessage($this->version, $data);
@@ -174,18 +174,7 @@ class Connector implements ConnectorInterface {
     /**
      * @return \React\Promise\Promise
      */
-    public function connect(
-        Stream $stream,
-        ConnectionOptions $options
-//        $username = null,
-//        $password = null,
-//        $clientId = null,
-//        $cleanSession = true,
-//        $willTopic = null,
-//        $willMessage = null,
-//        $willQos = null,
-//        $willRetain = null
-    ) {
+    public function connect(Stream $stream, ConnectionOptions $options) {
         $packet = new Connect(
             $this->version,
             $options->username,
@@ -206,18 +195,9 @@ class Connector implements ConnectorInterface {
         } else {
             $deferred->reject();
         }
+
         return $deferred->promise();
     }
-
-//    /**
-//     * @param Stream $stream
-//     * @param $message
-//     * @return bool|void
-//     */
-//    protected function sendToStream(Stream $stream, $message)
-//    {
-//        return $stream->write($message);
-//    }
 
     private function sendPacketToStream(Stream $stream, ControlPacket $controlPacket)
     {
@@ -243,6 +223,7 @@ class Connector implements ConnectorInterface {
         $stream->on('SUBSCRIBE_ACK', function($message) use ($stream, $deferred) {
             $deferred->resolve($stream);
         });
+
         return $deferred->promise();
     }
 
@@ -261,6 +242,7 @@ class Connector implements ConnectorInterface {
         $stream->on('UNSUBSCRIBE_ACK', function($message) use ($stream, $deferred) {
             $deferred->resolve($stream);
         });
+
         return $deferred->promise();
     }
 
@@ -269,6 +251,7 @@ class Connector implements ConnectorInterface {
         $packet = new Disconnect($this->version);
         $this->sendPacketToStream($stream, $packet);
         $this->getLoop()->stop();
+
         return new FulfilledPromise($stream);
     }
 
@@ -277,7 +260,6 @@ class Connector implements ConnectorInterface {
      */
     public function publish(Stream $stream, $topic, $message, $qos = 0, $dup = false)
     {
-        $deferred = new Deferred();
         $packet = new Publish($this->version);
         $packet->setTopic($topic);
         $packet->setMessageId($this->messageCounter++);
@@ -285,24 +267,27 @@ class Connector implements ConnectorInterface {
         $packet->setDup($dup);
         $packet->addRawToPayLoad($message);
         $success = $this->sendPacketToStream($stream, $packet);
+
+        $deferred = new Deferred();
         if ($success) {
             $deferred->resolve($stream);
         } else {
             $deferred->reject();
         }
+
         return $deferred->promise();
     }
 
-    private function registerSignalHandler()
-    {
-        /*
-        pcntl_signal(SIGTERM, array($this, "processSignal"));
-        pcntl_signal(SIGHUP,  array($this, "processSignal"));
-        pcntl_signal(SIGINT, array($this, "processSignal"));
-        */
-    }
+//    private function registerSignalHandler()
+//    {
+//        /*
+//        pcntl_signal(SIGTERM, array($this, "processSignal"));
+//        pcntl_signal(SIGHUP,  array($this, "processSignal"));
+//        pcntl_signal(SIGINT, array($this, "processSignal"));
+//        */
+//    }
 
-    private function getSplittedMessage($data)
+    private function splitMessage($data)
     {
         $messages = array();
         while(true) {
@@ -316,6 +301,7 @@ class Connector implements ConnectorInterface {
                 break;
             }
         }
+
         return $messages;
     }
 
@@ -332,7 +318,7 @@ class Connector implements ConnectorInterface {
      *
      * @return ConnectionOptions
      */
-    protected function getDefaultConnectionOptions()
+    private function getDefaultConnectionOptions()
     {
         return new ConnectionOptions();
     }
