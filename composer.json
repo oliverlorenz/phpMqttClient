@@ -3,7 +3,6 @@
     "description": "a mqtt client library for php",
     "keywords": ["mqtt", "IoT"],
     "license": "LGPL",
-    "minimum-stability": "dev",
     "authors": [
         {
             "name": "Oliver Lorenz",
@@ -20,10 +19,10 @@
         "react/stream": "0.4.*",
         "react/event-loop": "0.4.*",
         "react/dns": "0.4.*",
-        "react/promise": "2.4.*"
+        "react/promise": "^2.4.1"
     },
     "require-dev": {
-        "phpunit/phpunit": "4.6.*",
+        "phpunit/phpunit": "^4.6.10",
         "codeclimate/php-test-reporter": "dev-master"
     }
 }
