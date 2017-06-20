@@ -225,11 +225,12 @@ class PublishTest extends PHPUnit_Framework_TestCase {
     {
         $input =
             chr($bit) .
-            chr(4) .
+//            chr(4) .
+            chr(2) .
             chr(0) .
+            chr(0) /*.
             chr(0) .
-            chr(0) .
-            chr(10)
+            chr(10)*/
         ;
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
         $parsedPacket = \oliverlorenz\reactphpmqtt\packet\Publish::parse($version, $input);
@@ -247,11 +248,12 @@ class PublishTest extends PHPUnit_Framework_TestCase {
     {
         $input =
             chr(49) .
-            chr(4) .
+//            chr(4) .
+            chr(2) .
             chr(0) .
+            chr(0) /*.
             chr(0) .
-            chr(0) .
-            chr(10)
+            chr(10)*/
         ;
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
         $parsedPacket = \oliverlorenz\reactphpmqtt\packet\Publish::parse($version, $input);
@@ -269,11 +271,12 @@ class PublishTest extends PHPUnit_Framework_TestCase {
     {
         $input =
             chr(56) .
-            chr(4) .
+//            chr(4) .
+            chr(2) .
             chr(0) .
+            chr(0) /*.
             chr(0) .
-            chr(0) .
-            chr(10)
+            chr(10)*/
         ;
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
         $parsedPacket = \oliverlorenz\reactphpmqtt\packet\Publish::parse($version, $input);
