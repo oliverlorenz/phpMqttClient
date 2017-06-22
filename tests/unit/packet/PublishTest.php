@@ -5,98 +5,117 @@
  * Time: 16:35
  */
 
+use oliverlorenz\reactphpmqtt\packet\MessageHelper;
+use oliverlorenz\reactphpmqtt\packet\Publish;
+
 class PublishTest extends PHPUnit_Framework_TestCase {
 
     public function testPublishStandard()
     {
-        $this->assertEquals(
-            \oliverlorenz\reactphpmqtt\packet\Publish::getControlPacketType(),
-            3
-        );
+        $this->assertEquals(3, Publish::getControlPacketType());
     }
 
-    public function testPublishStandarWithQos2()
+    public function testPublishStandardWithQos2()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
+        $packet = new Publish($version);
         $packet->setQos(2);
+
         $this->assertEquals(
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString(
+            MessageHelper::getReadableByRawString(
                 chr(52) .
                 chr(2) .
                 chr(0) .
                 chr(0) .
                 chr(49)
             ),
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($packet->get() . 1)
+            MessageHelper::getReadableByRawString($packet->get() . 1)
         );
     }
 
     public function testPublishStandarWithQos1()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
+        $packet = new Publish($version);
         $packet->setQos(1);
         $this->assertEquals(
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString(
+            MessageHelper::getReadableByRawString(
                 chr(50) .
                 chr(2) .
                 chr(0) .
                 chr(0) .
                 chr(49)
             ),
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($packet->get() . 1)
+            MessageHelper::getReadableByRawString($packet->get() . 1)
         );
     }
 
-    public function testPublishStandarWithQos0()
+    public function testPublishStandardWithQos0()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
+        $packet = new Publish($version);
         $packet->setQos(0);
         $this->assertEquals(
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString(
+            MessageHelper::getReadableByRawString(
                 chr(48) .
                 chr(2) .
                 chr(0) .
                 chr(0) .
                 chr(49)
             ),
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($packet->get() . 1)
+            MessageHelper::getReadableByRawString($packet->get() . 1)
         );
     }
 
-    public function testPublishStandarWithDup()
+    public function testPublishStandardWithDup()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
+        $packet = new Publish($version);
         $packet->setDup(true);
         $this->assertEquals(
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString(
+            MessageHelper::getReadableByRawString(
                 chr(56) .
                 chr(2) .
                 chr(0) .
                 chr(0) .
                 chr(49)
             ),
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($packet->get() . 1)
+            MessageHelper::getReadableByRawString($packet->get() . 1)
         );
     }
 
-    public function testPublishStandarWithRetain()
+    public function testPublishStandardWithRetain()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
+        $packet = new Publish($version);
         $packet->setRetain(true);
         $this->assertEquals(
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString(
+            MessageHelper::getReadableByRawString(
                 chr(49) .
                 chr(2) .
                 chr(0) .
                 chr(0) .
                 chr(49)
             ),
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($packet->get() . 1)
+            MessageHelper::getReadableByRawString($packet->get() . 1)
+        );
+    }
+
+    public function testPublishWithPayload()
+    {
+        $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
+        $packet = new Publish($version);
+        $packet->addRawToPayLoad('This is the payload');
+
+        $this->assertEquals(
+            MessageHelper::getReadableByRawString(
+                chr(48) .
+                chr(21) .
+                chr(0) .
+                chr(0) .
+                'This is the payload'
+            ),
+            MessageHelper::getReadableByRawString($packet->get())
         );
     }
 
@@ -105,10 +124,10 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $topic = 'topictest';
 
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
+        $packet = new Publish($version);
         $packet->setTopic($topic);
 
-        $reflection = new ReflectionClass('\oliverlorenz\reactphpmqtt\packet\Publish');
+        $reflection = new ReflectionClass('oliverlorenz\reactphpmqtt\packet\Publish');
         $property = $reflection->getProperty('topic');
         $property->setAccessible(true);
 
@@ -123,10 +142,10 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $qos = 2;
 
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
+        $packet = new Publish($version);
         $packet->setQos($qos);
 
-        $reflection = new ReflectionClass('\oliverlorenz\reactphpmqtt\packet\Publish');
+        $reflection = new ReflectionClass('oliverlorenz\reactphpmqtt\packet\Publish');
         $property = $reflection->getProperty('qos');
         $property->setAccessible(true);
 
@@ -141,10 +160,10 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $dup = true;
 
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
+        $packet = new Publish($version);
         $packet->setDup($dup);
 
-        $reflection = new ReflectionClass('\oliverlorenz\reactphpmqtt\packet\Publish');
+        $reflection = new ReflectionClass('oliverlorenz\reactphpmqtt\packet\Publish');
         $property = $reflection->getProperty('dup');
         $property->setAccessible(true);
 
@@ -159,10 +178,10 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $retain = true;
 
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
+        $packet = new Publish($version);
         $packet->setRetain($retain);
 
-        $reflection = new ReflectionClass('\oliverlorenz\reactphpmqtt\packet\Publish');
+        $reflection = new ReflectionClass('oliverlorenz\reactphpmqtt\packet\Publish');
         $property = $reflection->getProperty('retain');
         $property->setAccessible(true);
 
@@ -177,9 +196,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $topic = 'topictest';
 
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
+        $packet = new Publish($version);
         $return = $packet->setTopic($topic);
-        $this->assertInstanceOf('\oliverlorenz\reactphpmqtt\packet\Publish', $return);
+        $this->assertInstanceOf('oliverlorenz\reactphpmqtt\packet\Publish', $return);
     }
 
     public function testSetMessageId()
@@ -187,10 +206,10 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $messageId = 1;
 
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
+        $packet = new Publish($version);
         $packet->setMessageId($messageId);
 
-        $reflection = new ReflectionClass('\oliverlorenz\reactphpmqtt\packet\Publish');
+        $reflection = new ReflectionClass('oliverlorenz\reactphpmqtt\packet\Publish');
         $property = $reflection->getProperty('messageId');
         $property->setAccessible(true);
 
@@ -205,9 +224,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $messageId = 1;
 
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
+        $packet = new Publish($version);
         $return = $packet->setMessageId($messageId);
-        $this->assertInstanceOf('\oliverlorenz\reactphpmqtt\packet\Publish', $return);
+        $this->assertInstanceOf('oliverlorenz\reactphpmqtt\packet\Publish', $return);
     }
 
     public function qosProvider() {
@@ -233,15 +252,12 @@ class PublishTest extends PHPUnit_Framework_TestCase {
             chr(10)*/
         ;
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $parsedPacket = \oliverlorenz\reactphpmqtt\packet\Publish::parse($version, $input);
+        $parsedPacket = Publish::parse($version, $input);
 
-        $comparisonPacket = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
+        $comparisonPacket = new Publish($version);
         $comparisonPacket->setQos($qos);
 
-        $this->assertEquals(
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($parsedPacket->get()),
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($comparisonPacket->get())
-        );
+        $this->assertPacketEquals($comparisonPacket, $parsedPacket);
     }
 
     public function testParseWithRetain()
@@ -256,15 +272,12 @@ class PublishTest extends PHPUnit_Framework_TestCase {
             chr(10)*/
         ;
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $parsedPacket = \oliverlorenz\reactphpmqtt\packet\Publish::parse($version, $input);
+        $parsedPacket = Publish::parse($version, $input);
 
-        $comparisonPacket = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
+        $comparisonPacket = new Publish($version);
         $comparisonPacket->setRetain(true);
 
-        $this->assertEquals(
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($parsedPacket->get()),
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($comparisonPacket->get())
-        );
+        $this->assertPacketEquals($comparisonPacket, $parsedPacket);
     }
 
     public function testParseWithDup()
@@ -279,14 +292,19 @@ class PublishTest extends PHPUnit_Framework_TestCase {
             chr(10)*/
         ;
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $parsedPacket = \oliverlorenz\reactphpmqtt\packet\Publish::parse($version, $input);
+        $parsedPacket = Publish::parse($version, $input);
 
-        $comparisonPacket = new \oliverlorenz\reactphpmqtt\packet\Publish($version);
+        $comparisonPacket = new Publish($version);
         $comparisonPacket->setDup(true);
 
+        $this->assertPacketEquals($comparisonPacket, $parsedPacket);
+    }
+    
+    private function assertPacketEquals(Publish $expected, Publish $actual)
+    {
         $this->assertEquals(
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($parsedPacket->get()),
-            \oliverlorenz\reactphpmqtt\packet\MessageHelper::getReadableByRawString($comparisonPacket->get())
+            MessageHelper::getReadableByRawString($expected->get()),
+            MessageHelper::getReadableByRawString($actual->get())
         );
     }
 }
