@@ -115,14 +115,14 @@ class Connector implements ConnectorInterface {
                 return $this->connect($stream, $options);
             })
             ->then(function (Stream $stream) {
-                return $this->emitEvents($stream);
+                return $this->listenForPackets($stream);
             })
             ->then(function(Stream $stream) {
                 return $this->keepAlive($stream);
             });
     }
 
-    private function emitEvents(Stream $stream)
+    private function listenForPackets(Stream $stream)
     {
         $stream->on('data', function ($rawData) use($stream) {
             $messages = $this->splitMessage($rawData);
