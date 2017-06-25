@@ -257,13 +257,14 @@ class Connector implements ConnectorInterface {
     /**
      * @return \React\Promise\Promise
      */
-    public function publish(Stream $stream, $topic, $message, $qos = 0, $dup = false)
+    public function publish(Stream $stream, $topic, $message, $qos = 0, $dup = false, $retain = false)
     {
         $packet = new Publish($this->version);
         $packet->setTopic($topic);
         $packet->setMessageId($this->messageCounter++);
         $packet->setQos($qos);
         $packet->setDup($dup);
+        $packet->setRetain($retain);
         $packet->addRawToPayLoad($message);
         $success = $this->sendPacketToStream($stream, $packet);
 
