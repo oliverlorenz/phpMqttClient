@@ -39,7 +39,7 @@ class Connector implements ConnectorInterface {
      * @var $loop LoopInterface
      */
     private $loop;
-    private $socketConnector;
+    protected $socketConnector;
     private $version;
 //    protected $isConnected = false;
 //    /** @var Stream|null $stream */
