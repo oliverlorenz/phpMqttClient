@@ -41,12 +41,6 @@ class Connector implements ConnectorInterface {
     private $loop;
     protected $socketConnector;
     private $version;
-//    protected $isConnected = false;
-//    /** @var Stream|null $stream */
-//    protected $stream;
-//    protected $onConnected;
-
-//    protected $pingedBack = null;
     private $messageCounter = 1;
 
     public function __construct(LoopInterface $loop, Resolver $resolver, Version $version)
@@ -55,39 +49,6 @@ class Connector implements ConnectorInterface {
         $this->socketConnector = new \React\SocketClient\Connector($loop, $resolver);
         $this->loop = $loop;
     }
-
-//    protected $onPublishReceived;
-
-//    /**
-//     * @return Stream
-//     */
-//    public function getStream()
-//    {
-//        return $this->stream;
-//    }
-
-//    /**
-//     * @return bool
-//     */
-//    public function isConnected()
-//    {
-//        return !is_null($this->stream);
-//    }
-
-//    public function onConnected(callable $function)
-//    {
-//        $this->onConnected = $function;
-//    }
-
-//    public function onPublishReceived(callable $function)
-//    {
-//        $this->onPublishReceived = $function;
-//    }
-
-//    public function __destruct()
-//    {
-//        $this->disconnect();
-//    }
 
     /**
      * Creates a new connection
@@ -122,13 +83,13 @@ class Connector implements ConnectorInterface {
 
     private function listenForPackets(Stream $stream)
     {
-        $stream->on('data', function ($rawData) use($stream) {
+        $stream->on('data', function ($rawData) use ($stream) {
             $messages = $this->splitMessage($rawData);
             foreach ($messages as $data) {
                 try {
                     $message = Factory::getByMessage($this->version, $data);
                     echo "received:\t" . get_class($message) . "\n";
-                    // echo MessageHelper::getReadableByRawString($data);
+
                     if ($message instanceof ConnectionAck) {
                         $stream->emit('CONNECTION_ACK', array($message));
                     } elseif ($message instanceof PingResponse) {
@@ -200,7 +161,7 @@ class Connector implements ConnectorInterface {
     {
         echo "send:\t\t" . get_class($controlPacket) . "\n";
         $message = $controlPacket->get();
-//        return $this->sendToStream($stream, $message);
+
         return $stream->write($message);
     }
 
@@ -264,6 +225,7 @@ class Connector implements ConnectorInterface {
         $packet->setDup($dup);
         $packet->setRetain($retain);
         $packet->addRawToPayLoad($message);
+
         $success = $this->sendPacketToStream($stream, $packet);
 
         $deferred = new Deferred();
@@ -275,15 +237,6 @@ class Connector implements ConnectorInterface {
 
         return $deferred->promise();
     }
-
-//    private function registerSignalHandler()
-//    {
-//        /*
-//        pcntl_signal(SIGTERM, array($this, "processSignal"));
-//        pcntl_signal(SIGHUP,  array($this, "processSignal"));
-//        pcntl_signal(SIGINT, array($this, "processSignal"));
-//        */
-//    }
 
     private function splitMessage($data)
     {
