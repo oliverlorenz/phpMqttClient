@@ -13,13 +13,13 @@ class Publish extends ControlPacket {
 
     protected $messageId;
 
-    protected $topic;
+    protected $topic = '';
 
     protected $qos = 0;
 
-    protected $dup;
+    protected $dup = false;
 
-    protected $retain;
+    protected $retain = false;
 
     protected $useVariableHeader = true;
 
@@ -42,7 +42,7 @@ class Publish extends ControlPacket {
         $packet = parent::parse($version, $rawInput);
         $topic = static::getPayloadLengthPrefixFieldInRawInput(2, $rawInput);
         $packet->setTopic($topic);
-        $packet->setReceiveTimestamp(new \DateTime());
+//        $packet->setReceiveTimestamp(new \DateTime());
         if (!empty($rawInput{0})) {
             $packet->setRetain(($rawInput{0} & 1) === 1);
             $packet->setDup(($rawInput{0} & 8) === 8);
@@ -135,13 +135,13 @@ class Publish extends ControlPacket {
         return $this->getLengthPrefixField($this->topic);
     }
 
-    /**
-     * @param \DateTime $dateTime
-     */
-    private function setReceiveTimestamp($dateTime)
-    {
-        $this->receiveTimestamp = $dateTime;
-    }
+//    /**
+//     * @param \DateTime $dateTime
+//     */
+//    private function setReceiveTimestamp($dateTime)
+//    {
+//        $this->receiveTimestamp = $dateTime;
+//    }
 
     protected function addReservedBitsToFixedHeaderControlPacketType($byte1)
     {

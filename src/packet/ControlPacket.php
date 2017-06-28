@@ -20,7 +20,7 @@ abstract class ControlPacket {
 
     protected $variableHeader;
 
-    protected $payload;
+    protected $payload = '';
 
     protected $useVariableHeader = false;
     protected $useFixedHeader = true;
