@@ -16,6 +16,22 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(3, Publish::getControlPacketType());
     }
 
+    public function testExceptionIsThrownForUnexpectedPacketType()
+    {
+        $input =
+            chr(0b00100000) .
+            chr(2) .
+            chr(0) .
+            chr(0);
+
+        $this->setExpectedException(
+            'RuntimeException',
+            'raw input is not valid for this control packet'
+        );
+
+        Publish::parse(new Version4(), $input);
+    }
+
     public function testPublishStandardWithQos2()
     {
         $packet = new Publish(new Version4());
