@@ -25,10 +25,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
             chr(0b00110100) .
             chr(2) .
             chr(0) .
-            chr(0) .
-            chr(49);
+            chr(0);
 
-        $this->assertSerialisedPacketEquals($expected, $packet->get() . 1);
+        $this->assertSerialisedPacketEquals($expected, $packet->get());
     }
 
     public function testPublishStandardWithQos1()
@@ -40,10 +39,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
             chr(0b00110010) .
             chr(2) .
             chr(0) .
-            chr(0) .
-            chr(49);
+            chr(0);
 
-        $this->assertSerialisedPacketEquals($expected, $packet->get() . 1);
+        $this->assertSerialisedPacketEquals($expected, $packet->get());
     }
 
     public function testPublishStandardWithQos0()
@@ -55,10 +53,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
             chr(0b00110000) .
             chr(2) .
             chr(0) .
-            chr(0) .
-            chr(49);
+            chr(0);
 
-        $this->assertSerialisedPacketEquals($expected, $packet->get() . 1);
+        $this->assertSerialisedPacketEquals($expected, $packet->get());
     }
 
     public function testPublishStandardWithDup()
@@ -70,10 +67,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
             chr(0b00111000) .
             chr(2) .
             chr(0) .
-            chr(0) .
-            chr(49);
+            chr(0);
 
-        $this->assertSerialisedPacketEquals($expected, $packet->get() . 1);
+        $this->assertSerialisedPacketEquals($expected, $packet->get());
     }
 
     public function testPublishStandardWithRetain()
@@ -85,10 +81,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
             chr(0b00110001) .
             chr(2) .
             chr(0) .
-            chr(0) .
-            chr(49);
+            chr(0);
 
-        $this->assertSerialisedPacketEquals($expected, $packet->get() . 1);
+        $this->assertSerialisedPacketEquals($expected, $packet->get());
     }
 
     public function testPublishWithPayload()
@@ -146,40 +141,6 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         );
     }
 
-    public function testSetDup()
-    {
-        $dup = true;
-
-        $packet = new Publish(new Version4());
-        $packet->setDup($dup);
-
-        $reflection = new ReflectionClass('oliverlorenz\reactphpmqtt\packet\Publish');
-        $property = $reflection->getProperty('dup');
-        $property->setAccessible(true);
-
-        $this->assertEquals(
-            $property->getValue($packet),
-            $dup
-        );
-    }
-
-    public function testSetRetain()
-    {
-        $retain = true;
-
-        $packet = new Publish(new Version4());
-        $packet->setRetain($retain);
-
-        $reflection = new ReflectionClass('oliverlorenz\reactphpmqtt\packet\Publish');
-        $property = $reflection->getProperty('retain');
-        $property->setAccessible(true);
-
-        $this->assertEquals(
-            $property->getValue($packet),
-            $retain
-        );
-    }
-
     public function testSetTopicReturn()
     {
         $topic = 'topictest';
@@ -187,23 +148,6 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $packet = new Publish(new Version4());
         $return = $packet->setTopic($topic);
         $this->assertInstanceOf('oliverlorenz\reactphpmqtt\packet\Publish', $return);
-    }
-
-    public function testSetMessageId()
-    {
-        $messageId = 1;
-
-        $packet = new Publish(new Version4());
-        $packet->setMessageId($messageId);
-
-        $reflection = new ReflectionClass('oliverlorenz\reactphpmqtt\packet\Publish');
-        $property = $reflection->getProperty('messageId');
-        $property->setAccessible(true);
-
-        $this->assertEquals(
-            $property->getValue($packet),
-            $messageId
-        );
     }
 
     public function testSetMessageIdReturn()
@@ -230,13 +174,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
     {
         $input =
             chr($byte1) .
-//            chr(4) .
             chr(2) .
             chr(0) .
-            chr(0) /*.
-            chr(0) .
-            chr(10)*/
-        ;
+            chr(0);
         $parsedPacket = Publish::parse(new Version4(), $input);
 
         $comparisonPacket = new Publish(new Version4());
@@ -249,13 +189,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
     {
         $input =
             chr(0b00110001) .
-//            chr(4) .
             chr(2) .
             chr(0) .
-            chr(0) /*.
-            chr(0) .
-            chr(10)*/
-        ;
+            chr(0);
         $parsedPacket = Publish::parse(new Version4(), $input);
 
         $comparisonPacket = new Publish(new Version4());
@@ -268,13 +204,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
     {
         $input =
             chr(0b00111000) .
-//            chr(4) .
             chr(2) .
             chr(0) .
-            chr(0) /*.
-            chr(0) .
-            chr(10)*/
-        ;
+            chr(0);
         $parsedPacket = Publish::parse(new Version4(), $input);
 
         $comparisonPacket = new Publish(new Version4());
@@ -294,10 +226,10 @@ class PublishTest extends PHPUnit_Framework_TestCase {
             chr(0) .
             chr(0) .
             'My payload';
-
         $parsedPacket = Publish::parse(new Version4(), $input);
 
         $this->assertPacketEquals($expectedPacket, $parsedPacket);
+        $this->assertEquals('My payload', $parsedPacket->getPayload());
     }
 
     private function assertPacketEquals(Publish $expected, Publish $actual)
