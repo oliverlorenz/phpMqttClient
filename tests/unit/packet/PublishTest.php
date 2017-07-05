@@ -9,6 +9,13 @@ use oliverlorenz\reactphpmqtt\packet\MessageHelper;
 use oliverlorenz\reactphpmqtt\packet\Publish;
 use oliverlorenz\reactphpmqtt\protocol\Version4;
 
+/**
+ * See http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718038
+ * for packet type, QoS, DUP and retain.
+ *
+ * See http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718039
+ * for topic and packet identifier.
+ */
 class PublishTest extends PHPUnit_Framework_TestCase {
 
     public function testPublishStandard()
@@ -32,13 +39,13 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         Publish::parse(new Version4(), $input);
     }
 
-    public function testPublishStandardWithQos2()
+    public function testPublishStandardWithQos0()
     {
         $packet = new Publish(new Version4());
-        $packet->setQos(2);
+        $packet->setQos(0);
 
         $expected =
-            chr(0b00110100) .
+            chr(0b00110000) .
             chr(2) .
             chr(0) .
             chr(0);
@@ -60,13 +67,13 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $this->assertSerialisedPacketEquals($expected, $packet->get());
     }
 
-    public function testPublishStandardWithQos0()
+    public function testPublishStandardWithQos2()
     {
         $packet = new Publish(new Version4());
-        $packet->setQos(0);
+        $packet->setQos(2);
 
         $expected =
-            chr(0b00110000) .
+            chr(0b00110100) .
             chr(2) .
             chr(0) .
             chr(0);
@@ -137,23 +144,6 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $this->assertSerialisedPacketEquals(
             $expected,
             $packet->get()
-        );
-    }
-
-    public function testSetQos()
-    {
-        $qos = 2;
-
-        $packet = new Publish(new Version4());
-        $packet->setQos($qos);
-
-        $reflection = new ReflectionClass('oliverlorenz\reactphpmqtt\packet\Publish');
-        $property = $reflection->getProperty('qos');
-        $property->setAccessible(true);
-
-        $this->assertEquals(
-            $property->getValue($packet),
-            $qos
         );
     }
 
@@ -229,6 +219,23 @@ class PublishTest extends PHPUnit_Framework_TestCase {
         $comparisonPacket->setDup(true);
 
         $this->assertPacketEquals($comparisonPacket, $parsedPacket);
+    }
+
+    public function testParseWithTopic()
+    {
+        $expectedPacket = new Publish(new Version4());
+        $expectedPacket->setTopic('some/test/topic');
+
+        $input =
+            chr(0b00110000) .
+            chr(17) .
+            chr(0) .
+            chr(15) .
+            'some/test/topic';
+        $parsedPacket = Publish::parse(new Version4(), $input);
+
+        $this->assertPacketEquals($expectedPacket, $parsedPacket);
+        $this->assertEquals('some/test/topic', $parsedPacket->getTopic());
     }
 
     public function testParseWithPayload()
