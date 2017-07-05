@@ -17,8 +17,6 @@ use oliverlorenz\reactphpmqtt\packet\MessageHelper;
 use oliverlorenz\reactphpmqtt\packet\PingRequest;
 use oliverlorenz\reactphpmqtt\packet\PingResponse;
 use oliverlorenz\reactphpmqtt\packet\Publish;
-use oliverlorenz\reactphpmqtt\packet\PublishAck;
-use oliverlorenz\reactphpmqtt\packet\PublishComplete;
 use oliverlorenz\reactphpmqtt\packet\PublishReceived;
 use oliverlorenz\reactphpmqtt\packet\PublishRelease;
 use oliverlorenz\reactphpmqtt\packet\Subscribe;
@@ -37,20 +35,13 @@ use React\Stream\Stream;
 
 class Connector implements ConnectorInterface {
 
-    protected $socketConnector;
-    protected $version;
-    protected $isConnected = false;
-    /** @var Stream|null $stream */
-    protected $stream;
-    protected $onConnected;
-
-    protected $pingedBack = null;
-    protected $messageCounter = 1;
-
     /**
      * @var $loop LoopInterface
      */
-    protected $loop;
+    private $loop;
+    protected $socketConnector;
+    private $version;
+    private $messageCounter = 1;
 
     public function __construct(LoopInterface $loop, Resolver $resolver, Version $version)
     {
@@ -59,45 +50,12 @@ class Connector implements ConnectorInterface {
         $this->loop = $loop;
     }
 
-    protected $onPublishReceived;
-
-    /**
-     * @return Stream
-     */
-    public function getStream()
-    {
-        return $this->stream;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isConnected()
-    {
-        return !is_null($this->stream);
-    }
-
-    public function onConnected(callable $function)
-    {
-        $this->onConnected = $function;
-    }
-
-    public function onPublishReceived(callable $function)
-    {
-        $this->onPublishReceived = $function;
-    }
-
-    public function __destruct()
-    {
-//        $this->disconnect();
-    }
-
     /**
      * Creates a new connection
      *
      * @param string $host
-     * @param integer $port [optional]
-     * @param ConnectionOptions $options [optional]
+     * @param int $port [optional]
+     * @param ConnectionOptions|null $options [optional]
      *
      * @return PromiseInterface Resolves to a \React\Stream\Stream once a connection has been established
      */
@@ -107,104 +65,84 @@ class Connector implements ConnectorInterface {
         ConnectionOptions $options = null
     ) {
         // Set default connection options, if none provided
-        if(!isset($options)){
+        if($options == null) {
             $options = $this->getDefaultConnectionOptions();
         }
 
         return $this->socketConnector->create($host, $port)
-            ->then(
-                function (Stream $stream) use ($options) {
-                    return $this->connect(
-                        $stream,
-                        $options->username,
-                        $options->password,
-                        $options->clientId,
-                        $options->cleanSession,
-                        $options->willTopic,
-                        $options->willMessage,
-                        $options->willQos,
-                        $options->willRetain
-                    );
-                }
-            )
-            ->then(
-                function (Stream $stream) {
-                    $stream->on('data', function ($rawData) use($stream) {
-                        $messages = $this->getSplittedMessage($rawData);
-                        foreach ($messages as $data) {
-                            try {
-                                $message = Factory::getByMessage($this->version, $data);
-                                echo "received:\t" . get_class($message) . "\n";
-                                // echo MessageHelper::getReadableByRawString($data);
-                                if ($message instanceof ConnectionAck) {
-                                    $stream->emit('CONNECTION_ACK', array($message));
-                                } elseif ($message instanceof PingResponse) {
-                                    $stream->emit('PING_RESPONSE', array($message));
-                                } elseif ($message instanceof Publish) {
-                                    $stream->emit('PUBLISH', array($message));
-                                } elseif ($message instanceof PublishReceived) {
-                                    $stream->emit('PUBLISH_RECEIVED', array($message));
-                                } elseif ($message instanceof PublishRelease) {
-                                    $stream->emit('PUBLISH_RELEASE', array($message));
-                                } elseif ($message instanceof UnsubscribeAck) {
-                                    $stream->emit('UNSUBSCRIBE_ACK', array($message));
-                                } elseif ($message instanceof SubscribeAck) {
-                                    $stream->emit('SUBSCRIBE_ACK', array($message));
-                                }
-                            } catch (\InvalidArgumentException $ex) {
-
-                            }
-                        }
-                    });
-
-                    $deferred = new Deferred();
-                    $stream->on('CONNECTION_ACK', function($message) use ($stream, $deferred) {
-                        $deferred->resolve($stream);
-                    });
-                    return $deferred->promise();
-                }
-            )
-            ->then(
-                function(Stream $stream) {
-                    // alive ping
-                    $this->getLoop()->addPeriodicTimer(10, function(Timer $timer) use ($stream) {
-                        $this->ping($stream);
-                    });
-                    return new FulfilledPromise($stream);
-                }
-            );
+            ->then(function (Stream $stream) use ($options) {
+                return $this->connect($stream, $options);
+            })
+            ->then(function (Stream $stream) {
+                return $this->listenForPackets($stream);
+            })
+            ->then(function(Stream $stream) {
+                return $this->keepAlive($stream);
+            });
     }
 
-    public function ping(Stream $stream)
+    private function listenForPackets(Stream $stream)
     {
-        $packet = new PingRequest($this->version);
-        $this->sentMessageToStream($stream, $packet);
+        $stream->on('data', function ($rawData) use ($stream) {
+            $messages = $this->splitMessage($rawData);
+            foreach ($messages as $data) {
+                try {
+                    $message = Factory::getByMessage($this->version, $data);
+                    echo "received:\t" . get_class($message) . "\n";
+
+                    if ($message instanceof ConnectionAck) {
+                        $stream->emit('CONNECTION_ACK', array($message));
+                    } elseif ($message instanceof PingResponse) {
+                        $stream->emit('PING_RESPONSE', array($message));
+                    } elseif ($message instanceof Publish) {
+                        $stream->emit('PUBLISH', array($message));
+                    } elseif ($message instanceof PublishReceived) {
+                        $stream->emit('PUBLISH_RECEIVED', array($message));
+                    } elseif ($message instanceof PublishRelease) {
+                        $stream->emit('PUBLISH_RELEASE', array($message));
+                    } elseif ($message instanceof UnsubscribeAck) {
+                        $stream->emit('UNSUBSCRIBE_ACK', array($message));
+                    } elseif ($message instanceof SubscribeAck) {
+                        $stream->emit('SUBSCRIBE_ACK', array($message));
+                    }
+                } catch (\InvalidArgumentException $ex) {
+
+                }
+            }
+        });
+
+        $deferred = new Deferred();
+        $stream->on('CONNECTION_ACK', function($message) use ($stream, $deferred) {
+            $deferred->resolve($stream);
+        });
+
+        return $deferred->promise();
+    }
+
+    private function keepAlive(Stream $stream)
+    {
+        $this->getLoop()->addPeriodicTimer(10, function(Timer $timer) use ($stream) {
+            $packet = new PingRequest($this->version);
+            $this->sendPacketToStream($stream, $packet);
+        });
+
+        return new FulfilledPromise($stream);
     }
 
     /**
      * @return \React\Promise\Promise
      */
-    public function connect(
-        Stream $stream,
-        $username = null,
-        $password = null,
-        $clientId = null,
-        $cleanSession = true,
-        $willTopic = null,
-        $willMessage = null,
-        $willQos = null,
-        $willRetain = null
-    ) {
+    public function connect(Stream $stream, ConnectionOptions $options) {
         $packet = new Connect(
             $this->version,
-            $username,
-            $password,
-            $clientId,
-            $cleanSession,
-            $willTopic,
-            $willMessage,
-            $willQos,
-            $willRetain
+            $options->username,
+            $options->password,
+            $options->clientId,
+            $options->cleanSession,
+            $options->willTopic,
+            $options->willMessage,
+            $options->willQos,
+            $options->willRetain
         );
         $message = $packet->get();
         echo MessageHelper::getReadableByRawString($message);
@@ -215,24 +153,16 @@ class Connector implements ConnectorInterface {
         } else {
             $deferred->reject();
         }
+
         return $deferred->promise();
     }
 
-    /**
-     * @param Stream $stream
-     * @param $message
-     * @return bool|void
-     */
-    protected function sendToStream(Stream $stream, $message)
-    {
-        return $stream->write($message);
-    }
-
-    protected function sentMessageToStream(Stream $stream, ControlPacket $controlPacket)
+    private function sendPacketToStream(Stream $stream, ControlPacket $controlPacket)
     {
         echo "send:\t\t" . get_class($controlPacket) . "\n";
         $message = $controlPacket->get();
-        return $this->sendToStream($stream, $message);
+
+        return $stream->write($message);
     }
 
     /**
@@ -245,12 +175,13 @@ class Connector implements ConnectorInterface {
     {
         $packet = new Subscribe($this->version);
         $packet->addSubscription($topic, $qos);
-        $this->sentMessageToStream($stream, $packet);
+        $this->sendPacketToStream($stream, $packet);
 
         $deferred = new Deferred();
         $stream->on('SUBSCRIBE_ACK', function($message) use ($stream, $deferred) {
             $deferred->resolve($stream);
         });
+
         return $deferred->promise();
     }
 
@@ -263,54 +194,51 @@ class Connector implements ConnectorInterface {
     {
         $packet = new Unsubscribe($this->version);
         $packet->removeSubscription($topic);
-        $this->sentMessageToStream($stream, $packet);
+        $this->sendPacketToStream($stream, $packet);
 
         $deferred = new Deferred();
         $stream->on('UNSUBSCRIBE_ACK', function($message) use ($stream, $deferred) {
             $deferred->resolve($stream);
         });
+
         return $deferred->promise();
     }
 
     public function disconnect(Stream $stream)
     {
         $packet = new Disconnect($this->version);
-        $this->sentMessageToStream($stream, $packet);
+        $this->sendPacketToStream($stream, $packet);
         $this->getLoop()->stop();
+
         return new FulfilledPromise($stream);
     }
 
     /**
      * @return \React\Promise\Promise
      */
-    public function publish(Stream $stream, $topic, $message, $qos = 0, $dup = false)
+    public function publish(Stream $stream, $topic, $message, $qos = 0, $dup = false, $retain = false)
     {
-        $deferred = new Deferred();
         $packet = new Publish($this->version);
         $packet->setTopic($topic);
         $packet->setMessageId($this->messageCounter++);
         $packet->setQos($qos);
         $packet->setDup($dup);
+        $packet->setRetain($retain);
         $packet->addRawToPayLoad($message);
-        $success = $this->sentMessageToStream($stream, $packet);
+
+        $success = $this->sendPacketToStream($stream, $packet);
+
+        $deferred = new Deferred();
         if ($success) {
             $deferred->resolve($stream);
         } else {
             $deferred->reject();
         }
+
         return $deferred->promise();
     }
 
-    private function registerSignalHandler()
-    {
-        /*
-        pcntl_signal(SIGTERM, array($this, "processSignal"));
-        pcntl_signal(SIGHUP,  array($this, "processSignal"));
-        pcntl_signal(SIGINT, array($this, "processSignal"));
-        */
-    }
-
-    private function getSplittedMessage($data)
+    private function splitMessage($data)
     {
         $messages = array();
         while(true) {
@@ -324,6 +252,7 @@ class Connector implements ConnectorInterface {
                 break;
             }
         }
+
         return $messages;
     }
 
@@ -340,7 +269,7 @@ class Connector implements ConnectorInterface {
      *
      * @return ConnectionOptions
      */
-    protected function getDefaultConnectionOptions()
+    private function getDefaultConnectionOptions()
     {
         return new ConnectionOptions();
     }
