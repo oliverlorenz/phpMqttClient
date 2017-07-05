@@ -27,9 +27,6 @@ class Publish extends ControlPacket {
 
     protected $useVariableHeader = true;
 
-    /** @var null|\DateTime $receiveTimestamp */
-    protected $receiveTimestamp = null;
-
     public static function getControlPacketType()
     {
         return ControlPacketType::PUBLISH;
@@ -43,7 +40,7 @@ class Publish extends ControlPacket {
         //TODO 3.3.2.2 Packet Identifier not yet supported
         $topic = static::getPayloadLengthPrefixFieldInRawInput(2, $rawInput);
         $packet->setTopic($topic);
-//        $packet->setReceiveTimestamp(new \DateTime());
+
         $byte1 = $rawInput{0};
         if (!empty($byte1)) {
             $packet->setRetain(($byte1 & 1) === 1);
@@ -137,14 +134,6 @@ class Publish extends ControlPacket {
         return $this->getLengthPrefixField($this->topic);
     }
 
-//    /**
-//     * @param \DateTime $dateTime
-//     */
-//    private function setReceiveTimestamp($dateTime)
-//    {
-//        $this->receiveTimestamp = $dateTime;
-//    }
-
     protected function addReservedBitsToFixedHeaderControlPacketType($byte1)
     {
         $qosByte = 0;
@@ -165,6 +154,4 @@ class Publish extends ControlPacket {
 
         return $byte1;
     }
-
-
 }
