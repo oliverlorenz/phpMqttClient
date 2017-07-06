@@ -25,8 +25,6 @@ class Publish extends ControlPacket {
 
     protected $retain = false;
 
-    protected $useVariableHeader = true;
-
     public static function getControlPacketType()
     {
         return ControlPacketType::PUBLISH;

@@ -13,11 +13,8 @@ namespace oliverlorenz\reactphpmqtt\packet;
  */
 class PublishReceived extends ControlPacket {
 
-    protected $useVariableHeader = true;
-
     public static function getControlPacketType()
     {
         return ControlPacketType::PUBREC;
     }
-
 }
