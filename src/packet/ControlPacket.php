@@ -11,8 +11,6 @@ use oliverlorenz\reactphpmqtt\protocol\Version;
 
 abstract class ControlPacket {
 
-//    protected $command;
-
     /** @var $version Version */
     protected $version;
 
