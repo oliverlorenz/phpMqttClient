@@ -63,12 +63,14 @@ $connector = new oliverlorenz\reactphpmqtt\Connector($loop, $resolver, $version)
 
 $p = $connector->create($config['server'], $config['port'], $config['options']);
 $p->then(function(\React\Stream\Stream $stream) use ($connector) {
+    $stream->on('PUBLISH', function(\oliverlorenz\reactphpmqtt\packet\Publish $message) {
+        print_r($message);
+    });
+    
     $connector->subscribe($stream, 'a/b', 0);
     $connector->subscribe($stream, 'a/c', 0);
 });
-$connector->onPublishReceived(function($message) {
-    print_r($message);
-});
+
 $loop->run();
 ```
 

@@ -19,7 +19,7 @@ abstract class ControlPacket {
 
     protected $variableHeader;
 
-    protected $payload;
+    protected $payload = '';
 
     protected $useVariableHeader = false;
     protected $useFixedHeader = true;
@@ -45,7 +45,8 @@ abstract class ControlPacket {
 
     protected static function checkRawInputValidControlPackageType($rawInput)
     {
-        if (!$rawInput{1} === static::getControlPacketType()) {
+        $packetType = ord($rawInput{0}) >> 4;
+        if ($packetType !== static::getControlPacketType()) {
             throw new \RuntimeException('raw input is not valid for this control packet');
         }
     }
@@ -57,10 +58,10 @@ abstract class ControlPacket {
 
     protected function getPayloadLength()
     {
-        return strlen($this->payload);
+        return strlen($this->getPayload());
     }
 
-    protected function getPayload()
+    public function getPayload()
     {
         return $this->payload;
     }
@@ -103,7 +104,6 @@ abstract class ControlPacket {
 
     /**
      * @param $fieldPayload
-     * @return string
      */
     public function addLengthPrefixedField($fieldPayload)
     {
