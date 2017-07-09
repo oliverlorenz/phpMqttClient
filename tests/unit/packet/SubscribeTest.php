@@ -5,27 +5,24 @@
  * Time: 11:29
  */
 
-use \oliverlorenz\reactphpmqtt\packet\MessageHelper;
+namespace oliverlorenz\reactphpmqtt\packet;
+
+use PHPUnit_Framework_TestCase;
 
 class SubscribeTest extends PHPUnit_Framework_TestCase {
 
-    public function testGetControlPacketType()
+    public function testSubscribeControlPacketTypeIsEight()
     {
-        $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Subscribe($version);
-        $this->assertEquals(
-            \oliverlorenz\reactphpmqtt\packet\Subscribe::getControlPacketType(),
-            8
-        );
+        $this->assertEquals(8, Subscribe::getControlPacketType());
     }
 
     public function testGetHeaderTestFixedHeader()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Subscribe($version);
+        $packet = new Subscribe($version);
 
-        $subcriptionTopic = 'a/b';
-        $packet->addSubscription($subcriptionTopic, 0);
+        $subscriptionTopic = 'a/b';
+        $packet->addSubscription($subscriptionTopic, 0);
 
         $this->assertEquals(
             MessageHelper::getReadableByRawString(substr($packet->get(), 0, 2)),
@@ -36,7 +33,7 @@ class SubscribeTest extends PHPUnit_Framework_TestCase {
     public function testGetHeaderTestFixedHeaderWithTwoSubscribedTopics()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Subscribe($version);
+        $packet = new Subscribe($version);
 
         $subscriptionTopic = 'a/b';
         $packet->addSubscription($subscriptionTopic, 1);
@@ -49,6 +46,4 @@ class SubscribeTest extends PHPUnit_Framework_TestCase {
             MessageHelper::getReadableByRawString(chr(130) . chr(14))
         );
     }
-
-
 }
