@@ -13,8 +13,6 @@ namespace oliverlorenz\reactphpmqtt\packet;
  */
 class Unsubscribe extends ControlPacket {
 
-    protected $useVariableHeader = true;
-
     public static function getControlPacketType()
     {
         return ControlPacketType::UNSUBSCRIBE;
@@ -27,5 +25,4 @@ class Unsubscribe extends ControlPacket {
     {
         $this->payload .= $this->getLengthPrefixField($topic);
     }
-
 }

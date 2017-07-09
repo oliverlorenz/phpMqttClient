@@ -16,8 +16,6 @@ namespace oliverlorenz\reactphpmqtt\packet;
  */
 class PingRequest extends ControlPacket {
 
-    protected $useVariableHeader = true;
-
     public static function getControlPacketType()
     {
         return ControlPacketType::PINGREQ;

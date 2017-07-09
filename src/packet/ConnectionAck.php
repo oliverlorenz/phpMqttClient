@@ -13,8 +13,6 @@ namespace oliverlorenz\reactphpmqtt\packet;
  */
 class ConnectionAck extends ControlPacket {
 
-    protected $useVariableHeader = false;
-
     public static function getControlPacketType()
     {
         return ControlPacketType::CONNACK;

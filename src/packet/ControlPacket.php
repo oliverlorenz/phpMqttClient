@@ -11,18 +11,10 @@ use oliverlorenz\reactphpmqtt\protocol\Version;
 
 abstract class ControlPacket {
 
-    protected $command;
-
     /** @var $version Version */
     protected $version;
 
-
-    protected $variableHeader;
-
     protected $payload = '';
-
-    protected $useVariableHeader = false;
-    protected $useFixedHeader = true;
 
     protected $identifier;
 
@@ -38,9 +30,9 @@ abstract class ControlPacket {
      */
     public static function parse(Version $version, $rawInput)
     {
-        $packet = new static($version);
         static::checkRawInputValidControlPackageType($rawInput);
-        return $packet;
+
+        return new static($version);
     }
 
     protected static function checkRawInputValidControlPackageType($rawInput)
@@ -51,9 +43,9 @@ abstract class ControlPacket {
         }
     }
 
-    /** @return null */
+    /** @return int */
     public static function getControlPacketType() {
-        throw new \RuntimeException('you should overwrite getControlPacketType()');
+        throw new \RuntimeException('you must overwrite getControlPacketType()');
     }
 
     protected function getPayloadLength()
@@ -91,7 +83,7 @@ abstract class ControlPacket {
      */
     protected function getVariableHeader()
     {
-        return null;
+        return '';
     }
 
     /**
@@ -119,27 +111,15 @@ abstract class ControlPacket {
         $return = chr($msb);
         $return .= chr($lsb);
         $return .= $fieldPayload;
+
         return $return;
     }
 
     public function get()
     {
-        $fullMessage = '';
-
-        // add fixed header
-        if ($this->useFixedHeader) {
-            $fullMessage .= $this->getFixedHeader();
-        }
-
-        // add variable header
-        if ($this->useVariableHeader) {
-            $fullMessage .= $this->getVariableHeader();
-        }
-
-        // add payload
-        $fullMessage .= $this->getPayload();
-
-        return $fullMessage;
+        return $this->getFixedHeader() .
+               $this->getVariableHeader() .
+               $this->getPayload();
     }
 
     /**
@@ -161,8 +141,7 @@ abstract class ControlPacket {
         $headerLength = 2;
         $header = substr($rawInput, $startIndex, $headerLength);
         $lengthOfMessage = ord($header{1});
+
         return substr($rawInput, $startIndex + $headerLength, $lengthOfMessage);
     }
-
-
 }

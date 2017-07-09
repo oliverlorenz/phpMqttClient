@@ -15,9 +15,6 @@ use oliverlorenz\reactphpmqtt\protocol\Version;
  */
 class Connect extends ControlPacket {
 
-    /** @var bool */
-    protected $useVariableHeader = true;
-
     /** @var null|string */
     protected $clientId = null;
 
