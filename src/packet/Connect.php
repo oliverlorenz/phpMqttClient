@@ -64,8 +64,7 @@ class Connect extends ControlPacket {
         $willMessage = null,
         $willQos = null,
         $willRetain = null,
-//        $keepAlive = 0
-        $keepAlive = 10
+        $keepAlive = 0
     ) {
         parent::__construct($version);
         $this->clientId = $clientId;

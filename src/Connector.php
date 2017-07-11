@@ -122,7 +122,7 @@ class Connector implements ConnectorInterface {
     private function keepAlive(Stream $stream, $keepAlive)
     {
         if($keepAlive > 0) {
-            $interval = (int) ($keepAlive / 2);
+            $interval = $keepAlive / 2;
 
             $this->getLoop()->addPeriodicTimer($interval, function(Timer $timer) use ($stream) {
                 $packet = new PingRequest($this->version);
