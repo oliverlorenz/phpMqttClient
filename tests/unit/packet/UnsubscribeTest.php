@@ -5,16 +5,15 @@
  * Time: 14:34
  */
 
+namespace oliverlorenz\reactphpmqtt\packet;
+
+use PHPUnit_Framework_TestCase;
+
 class UnsubscribeTest extends PHPUnit_Framework_TestCase {
 
-    public function testPublishStandard()
+    public function testUnsubscribeControlPacketTypeIsTen()
     {
-        $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Unsubscribe($version);
-        $this->assertEquals(
-            \oliverlorenz\reactphpmqtt\packet\Unsubscribe::getControlPacketType(),
-            10
-        );
+        $this->assertEquals(10, Unsubscribe::getControlPacketType());
     }
 
     public function testUnsubscribe()

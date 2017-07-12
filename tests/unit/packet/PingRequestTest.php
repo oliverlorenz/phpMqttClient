@@ -5,22 +5,22 @@
  * Time: 11:05
  */
 
+namespace oliverlorenz\reactphpmqtt\packet;
+
+use PHPUnit_Framework_TestCase;
+
 class PingRequestTest extends PHPUnit_Framework_TestCase {
 
-    public function testGetControlPacketType()
+    public function testPingRequestControlPacketTypeIsTwelve()
     {
-        $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\PingRequest($version);
-        $this->assertEquals(
-            \oliverlorenz\reactphpmqtt\packet\PingRequest::getControlPacketType(),
-            12
-        );
+        $this->assertEquals(12, PingRequest::getControlPacketType());
     }
 
     public function testGetHeaderTestFixedHeader()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\PingRequest($version);
+        $packet = new PingRequest($version);
+
         $this->assertEquals(
             substr($packet->get(), 0, 2),
             chr(12 << 4) . chr(0)

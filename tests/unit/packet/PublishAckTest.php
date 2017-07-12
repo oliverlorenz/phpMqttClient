@@ -5,13 +5,14 @@
  * Time: 23:20
  */
 
+namespace oliverlorenz\reactphpmqtt\packet;
+
+use PHPUnit_Framework_TestCase;
+
 class PublishAckTest extends PHPUnit_Framework_TestCase {
 
-    public function testGetControlPacketType()
+    public function testPublishAckControlPacketTypeIsFour()
     {
-        $this->assertEquals(
-            \oliverlorenz\reactphpmqtt\packet\PublishAck::getControlPacketType(),
-            4
-        );
+        $this->assertEquals(4, PublishAck::getControlPacketType());
     }
 }
