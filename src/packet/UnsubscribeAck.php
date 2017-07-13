@@ -13,8 +13,6 @@ namespace oliverlorenz\reactphpmqtt\packet;
  */
 class UnsubscribeAck extends ControlPacket {
 
-    protected $useVariableHeader = true;
-
     public static function getControlPacketType()
     {
         return ControlPacketType::UNSUBACK;

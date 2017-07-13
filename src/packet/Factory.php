@@ -23,7 +23,7 @@ class Factory {
         $packetControlType = ord($input{0}) >> 4;
         switch ($packetControlType) {
             case ConnectionAck::getControlPacketType():
-                return new ConnectionAck($version, $input);
+                return ConnectionAck::parse($version, $input);
             case PingResponse::getControlPacketType():
                 return new PingResponse($version, $input);
             case SubscribeAck::getControlPacketType():

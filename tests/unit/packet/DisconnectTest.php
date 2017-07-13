@@ -5,16 +5,14 @@
  * Time: 16:34
  */
 
+namespace oliverlorenz\reactphpmqtt\packet;
+
+use PHPUnit_Framework_TestCase;
+
 class DisconnectTest extends PHPUnit_Framework_TestCase {
 
-    public function testPublishStandard()
+    public function testDisconnectControlPacketTypeIsFourteen()
     {
-        $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Disconnect($version);
-        $this->assertEquals(
-            \oliverlorenz\reactphpmqtt\packet\Disconnect::getControlPacketType(),
-            14
-        );
+        $this->assertEquals(14, Disconnect::getControlPacketType());
     }
-
 }

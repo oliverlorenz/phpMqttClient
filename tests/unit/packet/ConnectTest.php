@@ -5,24 +5,22 @@
  * Time: 18:56
  */
 
-use \oliverlorenz\reactphpmqtt\packet\MessageHelper;
+namespace oliverlorenz\reactphpmqtt\packet;
+
+use PHPUnit_Framework_TestCase;
 
 class ConnectTest extends PHPUnit_Framework_TestCase {
 
-    public function testGetControlPacketType()
+    public function testConnectControlPacketTypeIsOne()
     {
-        $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Connect($version);
-        $this->assertEquals(
-            1,
-            \oliverlorenz\reactphpmqtt\packet\Connect::getControlPacketType()
-        );
+        $this->assertEquals(1, Connect::getControlPacketType());
     }
 
     public function testGetHeaderTestFixedHeader()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Connect($version, null, null, 'clientid');
+        $packet = new Connect($version, null, null, 'clientid');
+
         $this->assertEquals(
             MessageHelper::getReadableByRawString(chr(1 << 4) . chr(20)),
             MessageHelper::getReadableByRawString(substr($packet->get(), 0, 2))
@@ -32,7 +30,8 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
     public function testGetHeaderTestVariableHeaderWithoutConnectFlags()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Connect($version, null, null, 'clientid', false);
+        $packet = new Connect($version, null, null, 'clientid', false);
+
         $this->assertEquals(
             MessageHelper::getReadableByRawString(
                 chr(0) .    // byte 1
@@ -50,7 +49,8 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
     public function testGetHeaderTestVariableHeaderWithConnectFlagsCleanSession()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Connect($version);
+        $packet = new Connect($version);
+
         $this->assertEquals(
             MessageHelper::getReadableByRawString(
                 chr(0) .    // byte 1
@@ -68,9 +68,10 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
     public function testGetHeaderTestVariableHeaderWithConnectFlagWillFlag()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Connect(
+        $packet = new Connect(
             $version, null, null, 'clientId', false, 'willTopic', 'willMessage'
         );
+
         $this->assertEquals(
             MessageHelper::getReadableByRawString(
                 chr(0) .    // byte 1
@@ -88,9 +89,10 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
     public function testGetHeaderTestVariableHeaderWithConnectFlagWillRetain()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Connect(
+        $packet = new Connect(
             $version, null, null, 'clientId', false, null, null, null, true
         );
+
         $this->assertEquals(
             MessageHelper::getReadableByRawString(
                 chr(0) .    // byte 1
@@ -108,9 +110,10 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
     public function testGetHeaderTestVariableHeaderWithConnectFlagUsername()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Connect(
+        $packet = new Connect(
             $version, 'username', null, 'clientId', false, false, null, false
         );
+
         $this->assertEquals(
             MessageHelper::getReadableByRawString(
                 chr(0) .    // byte 1
@@ -128,9 +131,10 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
     public function testGetHeaderTestVariableHeaderWithConnectFlagPassword()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Connect(
+        $packet = new Connect(
             $version, null, 'password', 'clientId', false, false, null, false
         );
+
         $this->assertEquals(
             MessageHelper::getReadableByRawString(
                 chr(0) .    // byte 1
@@ -148,9 +152,10 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
     public function testGetHeaderTestVariableHeaderWithConnectFlagWillWillQos()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Connect(
+        $packet = new Connect(
             $version, null, null, 'clientId', false, null, null, true, null
         );
+
         $this->assertEquals(
             MessageHelper::getReadableByRawString(
                 chr(0) .    // byte 1
@@ -168,9 +173,10 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
     public function testGetHeaderTestVariableHeaderWithConnectFlagUserNamePasswordCleanSession()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Connect(
+        $packet = new Connect(
             $version, 'username', 'password', 'clientId', true, false, null, false
         );
+
         $this->assertEquals(
             MessageHelper::getReadableByRawString(
                 chr(0) .    // byte 1
@@ -188,7 +194,8 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
     public function testGetHeaderTestPayloadClientId()
     {
         $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\Connect($version, null, null, 'clientid');
+        $packet = new Connect($version, null, null, 'clientid');
+
         $this->assertEquals(
             substr($packet->get(), 12),
             chr(0) .    // byte 1
@@ -196,5 +203,4 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
             'clientid'
         );
     }
-
 }

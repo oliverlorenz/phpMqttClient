@@ -4,4 +4,12 @@
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
          stopOnFailure="false">
+    <testsuite>
+        <directory>../tests</directory>
+    </testsuite>
+    <filter>
+        <whitelist>
+            <directory>../src</directory>
+        </whitelist>
+    </filter>
 </phpunit>
