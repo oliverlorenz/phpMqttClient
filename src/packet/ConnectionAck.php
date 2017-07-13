@@ -11,7 +11,9 @@ namespace oliverlorenz\reactphpmqtt\packet;
  * The CONNACK Packet is the packet sent by the Server in response to
  * a CONNECT Packet received from a Client.
  */
-class ConnectionAck extends ControlPacket {
+class ConnectionAck extends ControlPacket
+{
+    const EVENT = 'CONNECTION_ACK';
 
     public static function getControlPacketType()
     {

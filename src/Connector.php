@@ -15,10 +15,7 @@ use oliverlorenz\reactphpmqtt\packet\Disconnect;
 use oliverlorenz\reactphpmqtt\packet\Factory;
 use oliverlorenz\reactphpmqtt\packet\MessageHelper;
 use oliverlorenz\reactphpmqtt\packet\PingRequest;
-use oliverlorenz\reactphpmqtt\packet\PingResponse;
 use oliverlorenz\reactphpmqtt\packet\Publish;
-use oliverlorenz\reactphpmqtt\packet\PublishReceived;
-use oliverlorenz\reactphpmqtt\packet\PublishRelease;
 use oliverlorenz\reactphpmqtt\packet\Subscribe;
 use oliverlorenz\reactphpmqtt\packet\SubscribeAck;
 use oliverlorenz\reactphpmqtt\packet\Unsubscribe;
@@ -88,23 +85,9 @@ class Connector implements ConnectorInterface {
             foreach ($messages as $data) {
                 try {
                     $message = Factory::getByMessage($this->version, $data);
-                    echo "received:\t" . get_class($message) . "\n";
+                    $stream->emit($message::EVENT, [$message]);
 
-                    if ($message instanceof ConnectionAck) {
-                        $stream->emit('CONNECTION_ACK', array($message));
-                    } elseif ($message instanceof PingResponse) {
-                        $stream->emit('PING_RESPONSE', array($message));
-                    } elseif ($message instanceof Publish) {
-                        $stream->emit('PUBLISH', array($message));
-                    } elseif ($message instanceof PublishReceived) {
-                        $stream->emit('PUBLISH_RECEIVED', array($message));
-                    } elseif ($message instanceof PublishRelease) {
-                        $stream->emit('PUBLISH_RELEASE', array($message));
-                    } elseif ($message instanceof UnsubscribeAck) {
-                        $stream->emit('UNSUBSCRIBE_ACK', array($message));
-                    } elseif ($message instanceof SubscribeAck) {
-                        $stream->emit('SUBSCRIBE_ACK', array($message));
-                    }
+                    echo "received:\t" . get_class($message) . "\n";
                 } catch (\InvalidArgumentException $ex) {
 
                 }
@@ -112,7 +95,7 @@ class Connector implements ConnectorInterface {
         });
 
         $deferred = new Deferred();
-        $stream->on('CONNECTION_ACK', function($message) use ($stream, $deferred) {
+        $stream->on(ConnectionAck::EVENT, function($message) use ($stream, $deferred) {
             $deferred->resolve($stream);
         });
 
@@ -178,7 +161,7 @@ class Connector implements ConnectorInterface {
         $this->sendPacketToStream($stream, $packet);
 
         $deferred = new Deferred();
-        $stream->on('SUBSCRIBE_ACK', function($message) use ($stream, $deferred) {
+        $stream->on(SubscribeAck::EVENT, function($message) use ($stream, $deferred) {
             $deferred->resolve($stream);
         });
 
@@ -197,7 +180,7 @@ class Connector implements ConnectorInterface {
         $this->sendPacketToStream($stream, $packet);
 
         $deferred = new Deferred();
-        $stream->on('UNSUBSCRIBE_ACK', function($message) use ($stream, $deferred) {
+        $stream->on(UnsubscribeAck::EVENT, function($message) use ($stream, $deferred) {
             $deferred->resolve($stream);
         });
 
