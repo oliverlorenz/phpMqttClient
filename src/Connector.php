@@ -73,8 +73,8 @@ class Connector implements ConnectorInterface {
             ->then(function (Stream $stream) {
                 return $this->listenForPackets($stream);
             })
-            ->then(function(Stream $stream) {
-                return $this->keepAlive($stream);
+            ->then(function(Stream $stream) use ($options) {
+                return $this->keepAlive($stream, $options->keepAlive);
             });
     }
 
@@ -102,12 +102,16 @@ class Connector implements ConnectorInterface {
         return $deferred->promise();
     }
 
-    private function keepAlive(Stream $stream)
+    private function keepAlive(Stream $stream, $keepAlive)
     {
-        $this->getLoop()->addPeriodicTimer(10, function(Timer $timer) use ($stream) {
-            $packet = new PingRequest($this->version);
-            $this->sendPacketToStream($stream, $packet);
-        });
+        if($keepAlive > 0) {
+            $interval = $keepAlive / 2;
+
+            $this->getLoop()->addPeriodicTimer($interval, function(Timer $timer) use ($stream) {
+                $packet = new PingRequest($this->version);
+                $this->sendPacketToStream($stream, $packet);
+            });
+        }
 
         return new FulfilledPromise($stream);
     }
@@ -125,7 +129,8 @@ class Connector implements ConnectorInterface {
             $options->willTopic,
             $options->willMessage,
             $options->willQos,
-            $options->willRetain
+            $options->willRetain,
+            $options->keepAlive
         );
         $message = $packet->get();
         echo MessageHelper::getReadableByRawString($message);

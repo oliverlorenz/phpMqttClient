@@ -101,6 +101,15 @@ class ConnectionOptions
     public $willRetain = false;
 
     /**
+     * The Keep Alive is a time interval measured in seconds.
+     *
+     * @see http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Keep_Alive
+     *
+     * @var int
+     */
+    public $keepAlive = 0;
+
+    /**
      * ConnectionOptions constructor.
      *
      * @param array $options [optional]
