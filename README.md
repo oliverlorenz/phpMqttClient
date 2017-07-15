@@ -49,6 +49,8 @@ $loop->run();
 ```php
 <?php
 
+use oliverlorenz\reactphpmqtt\packet\Publish;
+
 require __DIR__ . '/../vendor/autoload.php';
 
 $config = include('config.php');
@@ -63,7 +65,7 @@ $connector = new oliverlorenz\reactphpmqtt\Connector($loop, $resolver, $version)
 
 $p = $connector->create($config['server'], $config['port'], $config['options']);
 $p->then(function(\React\Stream\Stream $stream) use ($connector) {
-    $stream->on('PUBLISH', function(\oliverlorenz\reactphpmqtt\packet\Publish $message) {
+    $stream->on(Publish::EVENT, function(Publish $message) {
         print_r($message);
     });
     
@@ -74,13 +76,13 @@ $p->then(function(\React\Stream\Stream $stream) use ($connector) {
 $loop->run();
 ```
 
-# Run tests
+## Run tests
 
     ./vendor/bin/phpunit -c ./tests/phpunit.xml ./tests
 
 
-# Troubleshooting
+## Troubleshooting
 
-## Why does the connect to localhost:1883 not work?
+### Why does the connect to localhost:1883 not work?
 
 The answer is simple: In the example is the DNS 8.8.8.8 configured. Your local server is not visible for them, so you can't connect.
