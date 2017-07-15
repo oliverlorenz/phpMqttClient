@@ -40,7 +40,7 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
                 chr(4) .    // byte 7
                 chr(0) .    // byte 8
                 chr(0) .    // byte 9
-                chr(10)     // byte 10
+                chr(0)      // byte 10
             ),
             MessageHelper::getReadableByRawString(substr($packet->get(), 2, 10))
         );
@@ -59,7 +59,7 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
                 chr(4) .    // byte 7
                 chr(2) .    // byte 8
                 chr(0) .    // byte 9
-                chr(10)     // byte 10
+                chr(0)      // byte 10
             ),
             MessageHelper::getReadableByRawString(substr($packet->get(), 2, 10))
         );
@@ -80,7 +80,7 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
                 chr(4) .    // byte 7
                 chr(4) .    // byte 8
                 chr(0) .    // byte 9
-                chr(10)     // byte 10
+                chr(0)      // byte 10
             ),
             MessageHelper::getReadableByRawString(substr($packet->get(), 2, 10))
         );
@@ -101,7 +101,7 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
                 chr(4) .    // byte 7
                 chr(32) .    // byte 8
                 chr(0) .    // byte 9
-                chr(10)     // byte 10
+                chr(0)      // byte 10
             ),
             MessageHelper::getReadableByRawString(substr($packet->get(), 2, 10))
         );
@@ -122,7 +122,7 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
                 chr(4) .    // byte 7
                 chr(128) .    // byte 8
                 chr(0) .    // byte 9
-                chr(10)     // byte 10
+                chr(0)      // byte 10
             ),
             MessageHelper::getReadableByRawString(substr($packet->get(), 2, 10))
         );
@@ -143,7 +143,7 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
                 chr(4) .    // byte 7
                 chr(64) .    // byte 8
                 chr(0) .    // byte 9
-                chr(10)     // byte 10
+                chr(0)      // byte 10
             ),
             MessageHelper::getReadableByRawString(substr($packet->get(), 2, 10))
         );
@@ -164,7 +164,7 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
                 chr(4) .    // byte 7
                 chr(8) .    // byte 8
                 chr(0) .    // byte 9
-                chr(10)     // byte 10
+                chr(0)      // byte 10
             ),
             MessageHelper::getReadableByRawString(substr($packet->get(), 2, 10))
         );
@@ -185,7 +185,28 @@ class ConnectTest extends PHPUnit_Framework_TestCase {
                 chr(4) .    // byte 7
                 chr(194) .    // byte 8
                 chr(0) .    // byte 9
-                chr(10)     // byte 10
+                chr(0)      // byte 10
+            ),
+            MessageHelper::getReadableByRawString(substr($packet->get(), 2, 10))
+        );
+    }
+
+    public function testBytesNineAndTenOfVariableHeaderAreKeepAlive()
+    {
+        $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
+        $packet = new \oliverlorenz\reactphpmqtt\packet\Connect(
+            $version, null, null, null, true, null, null, null, null, 999
+        );
+
+        $this->assertEquals(
+            MessageHelper::getReadableByRawString(
+                chr(0) .    // byte 1
+                chr(4) .    // byte 2
+                'MQTT' .    // byte 3,4,5,6
+                chr(4) .    // byte 7
+                chr(2) .    // byte 8
+                chr(3) .    // byte 9
+                chr(231)    // byte 10
             ),
             MessageHelper::getReadableByRawString(substr($packet->get(), 2, 10))
         );
