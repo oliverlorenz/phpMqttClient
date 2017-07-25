@@ -11,16 +11,16 @@ use oliverlorenz\reactphpmqtt\protocol\Version;
 
 class Factory
 {
-    public static function splitMessage(Version $version, $data)
+    public static function getNextPacket(Version $version, $remainingData)
     {
-        while(isset($data{1})) {
-            $remainingLength = ord($data{1});
+        while(isset($remainingData{1})) {
+            $remainingLength = ord($remainingData{1});
             $packetLength = 2 + $remainingLength;
-            $message = substr($data, 0, $packetLength);
+            $nextPacketData = substr($remainingData, 0, $packetLength);
 
-            yield self::getByMessage($version, $message);
+            yield self::getByMessage($version, $nextPacketData);
 
-            $data = substr($data, $packetLength);
+            $remainingData = substr($remainingData, $packetLength);
         }
     }
 
@@ -30,6 +30,7 @@ class Factory
      * @throws \InvalidArgumentException
      * @return ConnectionAck|PingResponse|SubscribeAck|Publish|PublishComplete|PublishRelease|PublishReceived
      */
+    //TODO Make this private
     public static function getByMessage(Version $version, $input)
     {
         $packetControlType = ord($input{0}) >> 4;

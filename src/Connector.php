@@ -82,7 +82,7 @@ class Connector implements ConnectorInterface {
     {
         $stream->on('data', function ($rawData) use ($stream) {
             try {
-                foreach (Factory::splitMessage($this->version, $rawData) as $packet) {
+                foreach (Factory::getNextPacket($this->version, $rawData) as $packet) {
                     $stream->emit($packet::EVENT, [$packet]);
                     echo "received:\t" . get_class($packet) . PHP_EOL;
                 }

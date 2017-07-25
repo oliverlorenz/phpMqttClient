@@ -105,18 +105,6 @@ class FactoryTest extends PHPUnit_Framework_TestCase {
         );
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
-    public function testGetByMessageNoInput()
-    {
-        $version = new Version4();
-        Factory::getByMessage(
-            $version,
-            ''
-        );
-    }
-
     private function assertPacketType($class, ControlPacket $packet)
     {
         $this->assertInstanceOf(
