@@ -13,7 +13,7 @@ class Factory {
      * @param $version
      * @param $input
      * @throws \InvalidArgumentException
-     * @return ControlPacket
+     * @return ConnectionAck|PingResponse|SubscribeAck|Publish|PublishComplete|PublishRelease|PublishReceived
      */
     public static function getByMessage($version, $input)
     {
