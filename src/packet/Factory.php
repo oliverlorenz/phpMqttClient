@@ -11,27 +11,25 @@ use oliverlorenz\reactphpmqtt\protocol\Version;
 
 class Factory
 {
+    /**
+     * @param Version $version
+     * @param string $remainingData
+     * @throws \InvalidArgumentException
+     * @return ConnectionAck|PingResponse|SubscribeAck|Publish|PublishComplete|PublishRelease|PublishReceived|void
+     */
     public static function getNextPacket(Version $version, $remainingData)
     {
         while(isset($remainingData{1})) {
             $remainingLength = ord($remainingData{1});
             $packetLength = 2 + $remainingLength;
             $nextPacketData = substr($remainingData, 0, $packetLength);
+            $remainingData = substr($remainingData, $packetLength);
 
             yield self::getByMessage($version, $nextPacketData);
-
-            $remainingData = substr($remainingData, $packetLength);
         }
     }
 
-    /**
-     * @param Version $version
-     * @param string $input
-     * @throws \InvalidArgumentException
-     * @return ConnectionAck|PingResponse|SubscribeAck|Publish|PublishComplete|PublishRelease|PublishReceived
-     */
-    //TODO Make this private
-    public static function getByMessage(Version $version, $input)
+    private static function getByMessage(Version $version, $input)
     {
         $packetControlType = ord($input{0}) >> 4;
 
