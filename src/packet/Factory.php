@@ -8,13 +8,14 @@
 namespace oliverlorenz\reactphpmqtt\packet;
 
 use oliverlorenz\reactphpmqtt\protocol\Version;
+use oliverlorenz\reactphpmqtt\protocol\Violation as ProtocolViolation;
 
 class Factory
 {
     /**
      * @param Version $version
      * @param string $remainingData
-     * @throws \InvalidArgumentException
+     * @throws ProtocolViolation
      * @return ConnectionAck|PingResponse|SubscribeAck|Publish|PublishComplete|PublishRelease|PublishReceived|void
      */
     public static function getNextPacket(Version $version, $remainingData)
@@ -31,9 +32,9 @@ class Factory
 
     private static function getByMessage(Version $version, $input)
     {
-        $packetControlType = ord($input{0}) >> 4;
+        $controlPacketType = ord($input{0}) >> 4;
 
-        switch ($packetControlType) {
+        switch ($controlPacketType) {
             case ConnectionAck::getControlPacketType():
                 return ConnectionAck::parse($version, $input);
 
@@ -56,6 +57,6 @@ class Factory
                 return PublishReceived::parse($version, $input);
         }
 
-        throw new \InvalidArgumentException('got message with control packet type ' . $packetControlType);
+        throw new ProtocolViolation('Unexpected packet type: ' . $controlPacketType);
     }
 }

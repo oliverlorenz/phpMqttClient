@@ -21,6 +21,7 @@ use oliverlorenz\reactphpmqtt\packet\SubscribeAck;
 use oliverlorenz\reactphpmqtt\packet\Unsubscribe;
 use oliverlorenz\reactphpmqtt\packet\UnsubscribeAck;
 use oliverlorenz\reactphpmqtt\protocol\Version;
+use oliverlorenz\reactphpmqtt\protocol\Violation as ProtocolViolation;
 use React\Dns\Resolver\Resolver;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\Timer;
@@ -87,8 +88,7 @@ class Connector implements ConnectorInterface {
                     echo "received:\t" . get_class($packet) . PHP_EOL;
                 }
             }
-            //TODO InvalidPacketException or something
-            catch (\InvalidArgumentException $e) {
+            catch (ProtocolViolation $e) {
                 //TODO Actually, the spec says to disconnect if you receive invalid data.
                 $stream->emit('INVALID', [$e]);
             }
