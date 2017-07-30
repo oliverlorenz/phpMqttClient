@@ -57,7 +57,10 @@ class FactoryTest extends PHPUnit_Framework_TestCase
     {
         $invalidData = chr(512 << 4).'Some invalid data';
 
-        $this->setExpectedException('InvalidArgumentException', 'got message with control packet type 0');
+        $this->setExpectedException(
+            'oliverlorenz\reactphpmqtt\protocol\Violation',
+            'Unexpected packet type: 0'
+        );
 
         foreach (Factory::getNextPacket(new Version4(), $invalidData) as $packet) {
             $this->assertFalse(true);
