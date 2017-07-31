@@ -1,8 +1,7 @@
 # PHP MQTT Client
 
-phpMqttClient is an MQTT client library for PHP. Its based on the reactPHP
-socket-client and added the mqtt protocol specific functions. I hope its a
-better starting point that the existing php mqtt libraries. 
+phpMqttClient is an MQTT client library for PHP. Its based on the reactPHP socket-client and added the MQTT protocol
+specific functions. I hope its a better starting point that the existing PHP MQTT libraries. 
 
 [![Build Status](https://travis-ci.org/oliverlorenz/phpMqttClient.svg?branch=master)](https://travis-ci.org/oliverlorenz/phpMqttClient) 
 [![Code Climate](https://codeclimate.com/github/oliverlorenz/phpMqttClient/badges/gpa.svg)](https://codeclimate.com/github/oliverlorenz/phpMqttClient) 
@@ -10,8 +9,8 @@ better starting point that the existing php mqtt libraries.
 
 ## Goal
 
-Goal of this project is easy to use MQTT client for PHP in a modern architecture
-without using any php modules. Currently, only protocol version 4 (mqtt 3.1.1) is implemented.
+Goal of this project is easy to use MQTT client for PHP in a modern architecture without using any php modules.
+Currently, only protocol version 4 (mqtt 3.1.1) is implemented.
 * Protocol specifications: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/csprd02/mqtt-v3.1.1-csprd02.html
 
 ## Example publish
@@ -19,7 +18,7 @@ without using any php modules. Currently, only protocol version 4 (mqtt 3.1.1) i
 ```php
 $config = require 'config.php';
 
-$connector = ClientFactory::createClient(new Version4(), '8.8.8.8');
+$connector = ClientFactory::createClient(new Version4());
 
 $p = $connector->create($config['server'], $config['port'], $config['options']);
 $p->then(function(Stream $stream) use ($connector) {
@@ -33,7 +32,7 @@ $connector->getLoop()->run();
 ```php
 $config = require 'config.php';
 
-$connector = ClientFactory::createClient(new Version4(), '8.8.8.8');
+$connector = ClientFactory::createClient(new Version4());
 
 $p = $connector->create($config['server'], $config['port'], $config['options']);
 $p->then(function(\React\Stream\Stream $stream) use ($connector) {

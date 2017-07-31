@@ -8,7 +8,7 @@ use React\EventLoop\Factory as EventLoopFactory;
 
 class ClientFactory
 {
-    public static function createClient(Version $version, $resolverIp)
+    public static function createClient(Version $version, $resolverIp = '8.8.8.8')
     {
         $loop = EventLoopFactory::create();
         $resolver = self::createDnsResolver($resolverIp, $loop);
@@ -16,7 +16,7 @@ class ClientFactory
         return new Connector($loop, $resolver, $version);
     }
 
-    public static function createSecureClient(Version $version, $resolverIp)
+    public static function createSecureClient(Version $version, $resolverIp = '8.8.8.8')
     {
         $loop = EventLoopFactory::create();
         $resolver = self::createDnsResolver($resolverIp, $loop);
