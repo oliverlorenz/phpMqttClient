@@ -15,15 +15,15 @@ class Publish extends ControlPacket
 {
     const EVENT = 'PUBLISH';
 
-    protected $messageId;
+    private $messageId;
 
-    protected $topic = '';
+    private $topic = '';
 
-    protected $qos = 0;
+    private $qos = 0;
 
-    protected $dup = false;
+    private $dup = false;
 
-    protected $retain = false;
+    private $retain = false;
 
     public static function getControlPacketType()
     {
@@ -32,27 +32,32 @@ class Publish extends ControlPacket
 
     public static function parse($rawInput)
     {
-        /** @var Publish $packet */
-        $packet = parent::parse($rawInput);
+        static::checkRawInputValidControlPackageType($rawInput);
 
         //TODO 3.3.2.2 Packet Identifier not yet supported
         $topic = static::getPayloadLengthPrefixFieldInRawInput(2, $rawInput);
-        $packet->setTopic($topic);
 
         $byte1 = $rawInput{0};
-        if (!empty($byte1)) {
-            $packet->setRetain(($byte1 & 1) === 1);
-            if (($byte1 & 2) === 2) {
-                $packet->setQos(1);
-            } elseif (($byte1 & 4) === 4) {
-                $packet->setQos(2);
-            }
-            $packet->setDup(($byte1 & 8) === 8);
+        $retain = ($byte1 & 1) === 1;
+        $qos = 0;
+        if (($byte1 & 2) === 2) {
+            $qos = 1;
+        } elseif (($byte1 & 4) === 4) {
+            $qos = 2;
         }
-        $packet->payload = substr(
+        $dup = ($byte1 & 8) === 8;
+
+        $payload = substr(
             $rawInput,
             4 + strlen($topic)
         );
+
+        $packet = new static();
+        $packet->setTopic($topic);
+        $packet->setRetain($retain);
+        $packet->setQos($qos);
+        $packet->setDup($dup);
+        $packet->addRawToPayLoad($payload);
 
         return $packet;
     }
