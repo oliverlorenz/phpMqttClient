@@ -206,8 +206,7 @@ class Connector implements ConnectorInterface {
      */
     public function publish(Stream $stream, $topic, $message, $qos = 0, $dup = false, $retain = false)
     {
-        $packet = new Publish();
-        $packet->setTopic($topic);
+        $packet = new Publish($topic);
         $packet->setMessageId($this->messageCounter++);
         $packet->setQos($qos);
         $packet->setDup($dup);

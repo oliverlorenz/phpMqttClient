@@ -25,6 +25,14 @@ class Publish extends ControlPacket
 
     private $retain = false;
 
+    /**
+     * @param string $topicName The Topic Name identifies the information channel to which payload data is published.
+     */
+    public function __construct($topicName)
+    {
+        $this->topic = $topicName;
+    }
+
     public static function getControlPacketType()
     {
         return ControlPacketType::PUBLISH;
@@ -52,24 +60,13 @@ class Publish extends ControlPacket
             4 + strlen($topic)
         );
 
-        $packet = new static();
-        $packet->setTopic($topic);
+        $packet = new static($topic);
         $packet->setRetain($retain);
         $packet->setQos($qos);
         $packet->setDup($dup);
         $packet->addRawToPayLoad($payload);
 
         return $packet;
-    }
-
-    /**
-     * @param $topic
-     * @return $this
-     */
-    public function setTopic($topic)
-    {
-        $this->topic = $topic;
-        return $this;
     }
 
     /**
