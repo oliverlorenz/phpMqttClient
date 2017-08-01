@@ -21,6 +21,7 @@ use oliverlorenz\reactphpmqtt\packet\SubscribeAck;
 use oliverlorenz\reactphpmqtt\packet\Unsubscribe;
 use oliverlorenz\reactphpmqtt\packet\UnsubscribeAck;
 use oliverlorenz\reactphpmqtt\protocol\Version;
+use oliverlorenz\reactphpmqtt\protocol\Violation as ProtocolViolation;
 use React\Dns\Resolver\Resolver;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\Timer;
@@ -81,16 +82,15 @@ class Connector implements ConnectorInterface {
     private function listenForPackets(Stream $stream)
     {
         $stream->on('data', function ($rawData) use ($stream) {
-            $messages = $this->splitMessage($rawData);
-            foreach ($messages as $data) {
-                try {
-                    $message = Factory::getByMessage($this->version, $data);
-                    $stream->emit($message::EVENT, [$message]);
-
-                    echo "received:\t" . get_class($message) . "\n";
-                } catch (\InvalidArgumentException $ex) {
-
+            try {
+                foreach (Factory::getNextPacket($this->version, $rawData) as $packet) {
+                    $stream->emit($packet::EVENT, [$packet]);
+                    echo "received:\t" . get_class($packet) . PHP_EOL;
                 }
+            }
+            catch (ProtocolViolation $e) {
+                //TODO Actually, the spec says to disconnect if you receive invalid data.
+                $stream->emit('INVALID', [$e]);
             }
         });
 
@@ -224,24 +224,6 @@ class Connector implements ConnectorInterface {
         }
 
         return $deferred->promise();
-    }
-
-    private function splitMessage($data)
-    {
-        $messages = array();
-        while(true) {
-            if (isset($data{1})) {
-                $length = ord($data{1});
-                $messages[] = substr($data, 0, $length + 2);
-                $data = substr($data, $length + 2);
-            }
-
-            if (empty($data)) {
-                break;
-            }
-        }
-
-        return $messages;
     }
 
     /**

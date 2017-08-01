@@ -7,38 +7,56 @@
 
 namespace oliverlorenz\reactphpmqtt\packet;
 
-class Factory {
+use oliverlorenz\reactphpmqtt\protocol\Version;
+use oliverlorenz\reactphpmqtt\protocol\Violation as ProtocolViolation;
 
+class Factory
+{
     /**
-     * @param $version
-     * @param $input
-     * @throws \InvalidArgumentException
-     * @return ConnectionAck|PingResponse|SubscribeAck|Publish|PublishComplete|PublishRelease|PublishReceived
+     * @param Version $version
+     * @param string $remainingData
+     * @throws ProtocolViolation
+     * @return ConnectionAck|PingResponse|SubscribeAck|Publish|PublishComplete|PublishRelease|PublishReceived|void
      */
-    public static function getByMessage($version, $input)
+    public static function getNextPacket(Version $version, $remainingData)
     {
-        if(empty($input)) {
-            throw new \InvalidArgumentException('input empty');
+        while(isset($remainingData{1})) {
+            $remainingLength = ord($remainingData{1});
+            $packetLength = 2 + $remainingLength;
+            $nextPacketData = substr($remainingData, 0, $packetLength);
+            $remainingData = substr($remainingData, $packetLength);
+
+            yield self::getByMessage($version, $nextPacketData);
         }
-        $packetControlType = ord($input{0}) >> 4;
-        switch ($packetControlType) {
+    }
+
+    private static function getByMessage(Version $version, $input)
+    {
+        $controlPacketType = ord($input{0}) >> 4;
+
+        switch ($controlPacketType) {
             case ConnectionAck::getControlPacketType():
                 return ConnectionAck::parse($version, $input);
+
             case PingResponse::getControlPacketType():
-                return new PingResponse($version, $input);
+                return PingResponse::parse($version, $input);
+
             case SubscribeAck::getControlPacketType():
-                return new SubscribeAck($version, $input);
+                return SubscribeAck::parse($version, $input);
+
             case Publish::getControlPacketType():
                 return Publish::parse($version, $input);
+
             case PublishComplete::getControlPacketType():
                 return PublishComplete::parse($version, $input);
+
             case PublishRelease::getControlPacketType():
                 return PublishRelease::parse($version, $input);
+
             case PublishReceived::getControlPacketType():
                 return PublishReceived::parse($version, $input);
         }
 
-        throw new \InvalidArgumentException('got message with control packet type ' . $packetControlType);
+        throw new ProtocolViolation('Unexpected packet type: ' . $controlPacketType);
     }
-
 }
