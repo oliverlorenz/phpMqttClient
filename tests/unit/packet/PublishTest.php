@@ -7,7 +7,6 @@
 
 use oliverlorenz\reactphpmqtt\packet\MessageHelper;
 use oliverlorenz\reactphpmqtt\packet\Publish;
-use oliverlorenz\reactphpmqtt\protocol\Version4;
 
 /**
  * See http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718038
@@ -36,12 +35,12 @@ class PublishTest extends PHPUnit_Framework_TestCase {
             'raw input is not valid for this control packet'
         );
 
-        Publish::parse(new Version4(), $input);
+        Publish::parse($input);
     }
 
     public function testPublishStandardWithQos0()
     {
-        $packet = new Publish(new Version4());
+        $packet = new Publish();
         $packet->setQos(0);
 
         $expected =
@@ -55,7 +54,7 @@ class PublishTest extends PHPUnit_Framework_TestCase {
 
     public function testPublishStandardWithQos1()
     {
-        $packet = new Publish(new Version4());
+        $packet = new Publish();
         $packet->setQos(1);
 
         $expected =
@@ -69,7 +68,7 @@ class PublishTest extends PHPUnit_Framework_TestCase {
 
     public function testPublishStandardWithQos2()
     {
-        $packet = new Publish(new Version4());
+        $packet = new Publish();
         $packet->setQos(2);
 
         $expected =
@@ -83,7 +82,7 @@ class PublishTest extends PHPUnit_Framework_TestCase {
 
     public function testPublishStandardWithDup()
     {
-        $packet = new Publish(new Version4());
+        $packet = new Publish();
         $packet->setDup(true);
 
         $expected =
@@ -97,7 +96,7 @@ class PublishTest extends PHPUnit_Framework_TestCase {
 
     public function testPublishStandardWithRetain()
     {
-        $packet = new Publish(new Version4());
+        $packet = new Publish();
         $packet->setRetain(true);
 
         $expected =
@@ -111,7 +110,7 @@ class PublishTest extends PHPUnit_Framework_TestCase {
 
     public function testPublishWithPayload()
     {
-        $packet = new Publish(new Version4());
+        $packet = new Publish();
         $packet->addRawToPayLoad('This is the payload');
 
         $expected =
@@ -128,7 +127,7 @@ class PublishTest extends PHPUnit_Framework_TestCase {
 
     public function testTopic()
     {
-        $packet = new Publish(new Version4());
+        $packet = new Publish();
 
         $packet->setTopic('topic/test');
 
@@ -151,7 +150,7 @@ class PublishTest extends PHPUnit_Framework_TestCase {
     {
         $topic = 'topictest';
 
-        $packet = new Publish(new Version4());
+        $packet = new Publish();
         $return = $packet->setTopic($topic);
         $this->assertInstanceOf('oliverlorenz\reactphpmqtt\packet\Publish', $return);
     }
@@ -160,7 +159,7 @@ class PublishTest extends PHPUnit_Framework_TestCase {
     {
         $messageId = 1;
 
-        $packet = new Publish(new Version4());
+        $packet = new Publish();
         $return = $packet->setMessageId($messageId);
         $this->assertInstanceOf('oliverlorenz\reactphpmqtt\packet\Publish', $return);
     }
@@ -183,9 +182,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
             chr(2) .
             chr(0) .
             chr(0);
-        $parsedPacket = Publish::parse(new Version4(), $input);
+        $parsedPacket = Publish::parse($input);
 
-        $comparisonPacket = new Publish(new Version4());
+        $comparisonPacket = new Publish();
         $comparisonPacket->setQos($qos);
 
         $this->assertPacketEquals($comparisonPacket, $parsedPacket);
@@ -198,9 +197,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
             chr(2) .
             chr(0) .
             chr(0);
-        $parsedPacket = Publish::parse(new Version4(), $input);
+        $parsedPacket = Publish::parse($input);
 
-        $comparisonPacket = new Publish(new Version4());
+        $comparisonPacket = new Publish();
         $comparisonPacket->setRetain(true);
 
         $this->assertPacketEquals($comparisonPacket, $parsedPacket);
@@ -213,9 +212,9 @@ class PublishTest extends PHPUnit_Framework_TestCase {
             chr(2) .
             chr(0) .
             chr(0);
-        $parsedPacket = Publish::parse(new Version4(), $input);
+        $parsedPacket = Publish::parse($input);
 
-        $comparisonPacket = new Publish(new Version4());
+        $comparisonPacket = new Publish();
         $comparisonPacket->setDup(true);
 
         $this->assertPacketEquals($comparisonPacket, $parsedPacket);
@@ -223,7 +222,7 @@ class PublishTest extends PHPUnit_Framework_TestCase {
 
     public function testParseWithTopic()
     {
-        $expectedPacket = new Publish(new Version4());
+        $expectedPacket = new Publish();
         $expectedPacket->setTopic('some/test/topic');
 
         $input =
@@ -232,7 +231,7 @@ class PublishTest extends PHPUnit_Framework_TestCase {
             chr(0) .
             chr(15) .
             'some/test/topic';
-        $parsedPacket = Publish::parse(new Version4(), $input);
+        $parsedPacket = Publish::parse($input);
 
         $this->assertPacketEquals($expectedPacket, $parsedPacket);
         $this->assertEquals('some/test/topic', $parsedPacket->getTopic());
@@ -240,7 +239,7 @@ class PublishTest extends PHPUnit_Framework_TestCase {
 
     public function testParseWithPayload()
     {
-        $expectedPacket = new Publish(new Version4());
+        $expectedPacket = new Publish();
         $expectedPacket->addRawToPayLoad('My payload');
 
         $input =
@@ -249,7 +248,7 @@ class PublishTest extends PHPUnit_Framework_TestCase {
             chr(0) .
             chr(0) .
             'My payload';
-        $parsedPacket = Publish::parse(new Version4(), $input);
+        $parsedPacket = Publish::parse($input);
 
         $this->assertPacketEquals($expectedPacket, $parsedPacket);
         $this->assertEquals('My payload', $parsedPacket->getPayload());

@@ -7,8 +7,6 @@
 
 namespace oliverlorenz\reactphpmqtt\packet;
 
-use oliverlorenz\reactphpmqtt\protocol\Version;
-
 /**
  * A PUBLISH Control Packet is sent from a Client to a Server or from
  * Server to a Client to transport an Application Message.
@@ -32,10 +30,10 @@ class Publish extends ControlPacket
         return ControlPacketType::PUBLISH;
     }
 
-    public static function parse(Version $version, $rawInput)
+    public static function parse($rawInput)
     {
         /** @var Publish $packet */
-        $packet = parent::parse($version, $rawInput);
+        $packet = parent::parse($rawInput);
 
         //TODO 3.3.2.2 Packet Identifier not yet supported
         $topic = static::getPayloadLengthPrefixFieldInRawInput(2, $rawInput);

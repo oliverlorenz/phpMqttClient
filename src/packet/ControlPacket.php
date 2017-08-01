@@ -7,32 +7,21 @@
 
 namespace oliverlorenz\reactphpmqtt\packet;
 
-use oliverlorenz\reactphpmqtt\protocol\Version;
-
-abstract class ControlPacket {
-
-    /** @var $version Version */
-    protected $version;
-
+abstract class ControlPacket
+{
     protected $payload = '';
 
     protected $identifier;
 
-    public function __construct(Version $version)
-    {
-        $this->version = $version;
-    }
-
     /**
-     * @param Version $version
      * @param string $rawInput
      * @return static
      */
-    public static function parse(Version $version, $rawInput)
+    public static function parse($rawInput)
     {
         static::checkRawInputValidControlPackageType($rawInput);
 
-        return new static($version);
+        return new static();
     }
 
     protected static function checkRawInputValidControlPackageType($rawInput)

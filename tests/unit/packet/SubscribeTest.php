@@ -18,8 +18,7 @@ class SubscribeTest extends PHPUnit_Framework_TestCase {
 
     public function testGetHeaderTestFixedHeader()
     {
-        $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new Subscribe($version);
+        $packet = new Subscribe();
 
         $subscriptionTopic = 'a/b';
         $packet->addSubscription($subscriptionTopic, 0);
@@ -32,8 +31,7 @@ class SubscribeTest extends PHPUnit_Framework_TestCase {
 
     public function testGetHeaderTestFixedHeaderWithTwoSubscribedTopics()
     {
-        $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new Subscribe($version);
+        $packet = new Subscribe();
 
         $subscriptionTopic = 'a/b';
         $packet->addSubscription($subscriptionTopic, 1);

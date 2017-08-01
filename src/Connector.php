@@ -83,7 +83,7 @@ class Connector implements ConnectorInterface {
     {
         $stream->on('data', function ($rawData) use ($stream) {
             try {
-                foreach (Factory::getNextPacket($this->version, $rawData) as $packet) {
+                foreach (Factory::getNextPacket($rawData) as $packet) {
                     $stream->emit($packet::EVENT, [$packet]);
                     echo "received:\t" . get_class($packet) . PHP_EOL;
                 }
@@ -108,7 +108,7 @@ class Connector implements ConnectorInterface {
             $interval = $keepAlive / 2;
 
             $this->getLoop()->addPeriodicTimer($interval, function(Timer $timer) use ($stream) {
-                $packet = new PingRequest($this->version);
+                $packet = new PingRequest();
                 $this->sendPacketToStream($stream, $packet);
             });
         }
@@ -161,7 +161,7 @@ class Connector implements ConnectorInterface {
      */
     public function subscribe(Stream $stream, $topic, $qos = 0)
     {
-        $packet = new Subscribe($this->version);
+        $packet = new Subscribe();
         $packet->addSubscription($topic, $qos);
         $this->sendPacketToStream($stream, $packet);
 
@@ -180,7 +180,7 @@ class Connector implements ConnectorInterface {
      */
     public function unsubscribe(Stream $stream, $topic)
     {
-        $packet = new Unsubscribe($this->version);
+        $packet = new Unsubscribe();
         $packet->removeSubscription($topic);
         $this->sendPacketToStream($stream, $packet);
 
@@ -194,7 +194,7 @@ class Connector implements ConnectorInterface {
 
     public function disconnect(Stream $stream)
     {
-        $packet = new Disconnect($this->version);
+        $packet = new Disconnect();
         $this->sendPacketToStream($stream, $packet);
         $this->getLoop()->stop();
 
@@ -206,7 +206,7 @@ class Connector implements ConnectorInterface {
      */
     public function publish(Stream $stream, $topic, $message, $qos = 0, $dup = false, $retain = false)
     {
-        $packet = new Publish($this->version);
+        $packet = new Publish();
         $packet->setTopic($topic);
         $packet->setMessageId($this->messageCounter++);
         $packet->setQos($qos);

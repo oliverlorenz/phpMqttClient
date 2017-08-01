@@ -5,26 +5,24 @@
  * Time: 11:27
  */
 
-class SubscribeAckTest extends PHPUnit_Framework_TestCase {
+namespace oliverlorenz\reactphpmqtt\packet;
 
-    public function testGetControlPacketType()
+use PHPUnit_Framework_TestCase as TestCase;
+
+class SubscribeAckTest extends TestCase {
+
+    public function testSubscribeAckControlPacketTypeIsNine()
     {
-        $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\SubscribeAck($version);
-        $this->assertEquals(
-            \oliverlorenz\reactphpmqtt\packet\SubscribeAck::getControlPacketType(),
-            9
-        );
+        $this->assertEquals(9, SubscribeAck::getControlPacketType());
     }
 
     public function testGetHeaderTestFixedHeader()
     {
-        $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new \oliverlorenz\reactphpmqtt\packet\SubscribeAck($version);
+        $packet = new SubscribeAck();
+
         $this->assertEquals(
             substr($packet->get(), 0, 2),
             chr(9 << 4) . chr(0)
         );
     }
-
 }

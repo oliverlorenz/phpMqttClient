@@ -2,7 +2,6 @@
 
 namespace oliverlorenz\reactphpmqtt\packet;
 
-use oliverlorenz\reactphpmqtt\protocol\Version4;
 use PHPUnit_Framework_TestCase;
 
 class ConnectionAckTest extends PHPUnit_Framework_TestCase
@@ -27,13 +26,12 @@ class ConnectionAckTest extends PHPUnit_Framework_TestCase
             'raw input is not valid for this control packet'
         );
 
-        ConnectionAck::parse(new Version4(), $input);
+        ConnectionAck::parse($input);
     }
 
     public function testPacketCanBeParsed()
     {
-        $version = new Version4();
-        $expectedPacket = new ConnectionAck($version);
+        $expectedPacket = new ConnectionAck();
 
         $input =
             chr(0b00100000) .
@@ -41,7 +39,7 @@ class ConnectionAckTest extends PHPUnit_Framework_TestCase
             chr(0) .
             chr(0);
 
-        $parsedPacket = ConnectionAck::parse($version, $input);
+        $parsedPacket = ConnectionAck::parse($input);
 
         $this->assertEquals($expectedPacket, $parsedPacket);
     }

@@ -2,7 +2,6 @@
 
 namespace oliverlorenz\reactphpmqtt\packet;
 
-use oliverlorenz\reactphpmqtt\protocol\Version4;
 use PHPUnit_Framework_TestCase;
 
 /**
@@ -30,13 +29,12 @@ class PingResponseTest extends PHPUnit_Framework_TestCase
             'raw input is not valid for this control packet'
         );
 
-        PingResponse::parse(new Version4(), $input);
+        PingResponse::parse($input);
     }
 
     public function testPacketCanBeParsed()
     {
-        $version = new Version4();
-        $expectedPacket = new PingResponse($version);
+        $expectedPacket = new PingResponse();
 
         $input =
             chr(0b11010000) .
@@ -44,7 +42,7 @@ class PingResponseTest extends PHPUnit_Framework_TestCase
             chr(0) .
             chr(0);
 
-        $parsedPacket = PingResponse::parse($version, $input);
+        $parsedPacket = PingResponse::parse($input);
 
         $this->assertEquals($expectedPacket, $parsedPacket);
     }

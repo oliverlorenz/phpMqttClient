@@ -7,7 +7,6 @@
 
 namespace oliverlorenz\reactphpmqtt\packet;
 
-use oliverlorenz\reactphpmqtt\protocol\Version4;
 use PHPUnit_Framework_TestCase;
 
 /**
@@ -24,15 +23,14 @@ class FactoryTest extends PHPUnit_Framework_TestCase
 {
     public function testStreamDataCanBeSplitIntoMultiplePackets()
     {
-        $version = new Version4();
         $incomingPackets = [
-            new ConnectionAck($version),
-            new PingResponse($version),
-            new Publish($version),
-            new PublishComplete($version),
-            new PublishReceived($version),
-            new PublishRelease($version),
-            new SubscribeAck($version),
+            new ConnectionAck(),
+            new PingResponse(),
+            new Publish(),
+            new PublishComplete(),
+            new PublishReceived(),
+            new PublishRelease(),
+            new SubscribeAck(),
         ];
 
         $string = array_reduce($incomingPackets, function($string, ControlPacket $packet) {
@@ -40,7 +38,7 @@ class FactoryTest extends PHPUnit_Framework_TestCase
         }, '');
 
         $parsedPackets = [];
-        foreach (Factory::getNextPacket($version, $string) as $packet) {
+        foreach (Factory::getNextPacket($string) as $packet) {
             $parsedPackets[] = $packet;
         }
 
@@ -62,7 +60,7 @@ class FactoryTest extends PHPUnit_Framework_TestCase
             'Unexpected packet type: 0'
         );
 
-        foreach (Factory::getNextPacket(new Version4(), $invalidData) as $packet) {
+        foreach (Factory::getNextPacket($invalidData) as $packet) {
             $this->assertFalse(true);
             break;
         }

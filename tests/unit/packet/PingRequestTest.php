@@ -18,8 +18,7 @@ class PingRequestTest extends PHPUnit_Framework_TestCase {
 
     public function testGetHeaderTestFixedHeader()
     {
-        $version = new \oliverlorenz\reactphpmqtt\protocol\Version4();
-        $packet = new PingRequest($version);
+        $packet = new PingRequest();
 
         $this->assertEquals(
             substr($packet->get(), 0, 2),
