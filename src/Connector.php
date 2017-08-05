@@ -15,15 +15,13 @@ use oliverlorenz\reactphpmqtt\packet\Disconnect;
 use oliverlorenz\reactphpmqtt\packet\Factory;
 use oliverlorenz\reactphpmqtt\packet\MessageHelper;
 use oliverlorenz\reactphpmqtt\packet\PingRequest;
-use oliverlorenz\reactphpmqtt\packet\PingResponse;
 use oliverlorenz\reactphpmqtt\packet\Publish;
-use oliverlorenz\reactphpmqtt\packet\PublishReceived;
-use oliverlorenz\reactphpmqtt\packet\PublishRelease;
 use oliverlorenz\reactphpmqtt\packet\Subscribe;
 use oliverlorenz\reactphpmqtt\packet\SubscribeAck;
 use oliverlorenz\reactphpmqtt\packet\Unsubscribe;
 use oliverlorenz\reactphpmqtt\packet\UnsubscribeAck;
 use oliverlorenz\reactphpmqtt\protocol\Version;
+use oliverlorenz\reactphpmqtt\protocol\Violation as ProtocolViolation;
 use React\Dns\Resolver\Resolver;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\Timer;
@@ -76,55 +74,44 @@ class Connector implements ConnectorInterface {
             ->then(function (Stream $stream) {
                 return $this->listenForPackets($stream);
             })
-            ->then(function(Stream $stream) {
-                return $this->keepAlive($stream);
+            ->then(function(Stream $stream) use ($options) {
+                return $this->keepAlive($stream, $options->keepAlive);
             });
     }
 
     private function listenForPackets(Stream $stream)
     {
         $stream->on('data', function ($rawData) use ($stream) {
-            $messages = $this->splitMessage($rawData);
-            foreach ($messages as $data) {
-                try {
-                    $message = Factory::getByMessage($this->version, $data);
-                    echo "received:\t" . get_class($message) . "\n";
-
-                    if ($message instanceof ConnectionAck) {
-                        $stream->emit('CONNECTION_ACK', array($message));
-                    } elseif ($message instanceof PingResponse) {
-                        $stream->emit('PING_RESPONSE', array($message));
-                    } elseif ($message instanceof Publish) {
-                        $stream->emit('PUBLISH', array($message));
-                    } elseif ($message instanceof PublishReceived) {
-                        $stream->emit('PUBLISH_RECEIVED', array($message));
-                    } elseif ($message instanceof PublishRelease) {
-                        $stream->emit('PUBLISH_RELEASE', array($message));
-                    } elseif ($message instanceof UnsubscribeAck) {
-                        $stream->emit('UNSUBSCRIBE_ACK', array($message));
-                    } elseif ($message instanceof SubscribeAck) {
-                        $stream->emit('SUBSCRIBE_ACK', array($message));
-                    }
-                } catch (\InvalidArgumentException $ex) {
-
+            try {
+                foreach (Factory::getNextPacket($this->version, $rawData) as $packet) {
+                    $stream->emit($packet::EVENT, [$packet]);
+                    echo "received:\t" . get_class($packet) . PHP_EOL;
                 }
+            }
+            catch (ProtocolViolation $e) {
+                //TODO Actually, the spec says to disconnect if you receive invalid data.
+                $stream->emit('INVALID', [$e]);
             }
         });
 
         $deferred = new Deferred();
-        $stream->on('CONNECTION_ACK', function($message) use ($stream, $deferred) {
+        $stream->on(ConnectionAck::EVENT, function($message) use ($stream, $deferred) {
             $deferred->resolve($stream);
         });
 
         return $deferred->promise();
     }
 
-    private function keepAlive(Stream $stream)
+    private function keepAlive(Stream $stream, $keepAlive)
     {
-        $this->getLoop()->addPeriodicTimer(10, function(Timer $timer) use ($stream) {
-            $packet = new PingRequest($this->version);
-            $this->sendPacketToStream($stream, $packet);
-        });
+        if($keepAlive > 0) {
+            $interval = $keepAlive / 2;
+
+            $this->getLoop()->addPeriodicTimer($interval, function(Timer $timer) use ($stream) {
+                $packet = new PingRequest($this->version);
+                $this->sendPacketToStream($stream, $packet);
+            });
+        }
 
         return new FulfilledPromise($stream);
     }
@@ -142,7 +129,8 @@ class Connector implements ConnectorInterface {
             $options->willTopic,
             $options->willMessage,
             $options->willQos,
-            $options->willRetain
+            $options->willRetain,
+            $options->keepAlive
         );
         $message = $packet->get();
         echo MessageHelper::getReadableByRawString($message);
@@ -178,7 +166,7 @@ class Connector implements ConnectorInterface {
         $this->sendPacketToStream($stream, $packet);
 
         $deferred = new Deferred();
-        $stream->on('SUBSCRIBE_ACK', function($message) use ($stream, $deferred) {
+        $stream->on(SubscribeAck::EVENT, function($message) use ($stream, $deferred) {
             $deferred->resolve($stream);
         });
 
@@ -197,7 +185,7 @@ class Connector implements ConnectorInterface {
         $this->sendPacketToStream($stream, $packet);
 
         $deferred = new Deferred();
-        $stream->on('UNSUBSCRIBE_ACK', function($message) use ($stream, $deferred) {
+        $stream->on(UnsubscribeAck::EVENT, function($message) use ($stream, $deferred) {
             $deferred->resolve($stream);
         });
 
@@ -236,24 +224,6 @@ class Connector implements ConnectorInterface {
         }
 
         return $deferred->promise();
-    }
-
-    private function splitMessage($data)
-    {
-        $messages = array();
-        while(true) {
-            if (isset($data{1})) {
-                $length = ord($data{1});
-                $messages[] = substr($data, 0, $length + 2);
-                $data = substr($data, $length + 2);
-            }
-
-            if (empty($data)) {
-                break;
-            }
-        }
-
-        return $messages;
     }
 
     /**

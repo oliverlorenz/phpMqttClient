@@ -39,6 +39,9 @@ class Connect extends ControlPacket {
     /** @var null */
     protected $willRetain;
 
+    /** @var int */
+    private $keepAlive;
+
     /**
      * @param Version $version
      * @param string|null $username
@@ -49,6 +52,7 @@ class Connect extends ControlPacket {
      * @param string|null $willMessage
      * @param bool|null $willQos
      * @param null $willRetain
+     * @param int $keepAlive
      */
     public function __construct(
         Version $version,
@@ -59,7 +63,8 @@ class Connect extends ControlPacket {
         $willTopic = null,
         $willMessage = null,
         $willQos = null,
-        $willRetain = null
+        $willRetain = null,
+        $keepAlive = 0
     ) {
         parent::__construct($version);
         $this->clientId = $clientId;
@@ -70,6 +75,7 @@ class Connect extends ControlPacket {
         $this->willMessage = $willMessage;
         $this->willQos = boolval($willQos);
         $this->willRetain = $willRetain;
+        $this->keepAlive = $keepAlive;
         $this->buildPayload();
     }
 
@@ -101,14 +107,24 @@ class Connect extends ControlPacket {
      */
     protected function getVariableHeader()
     {
-        return chr(ControlPacketType::MOST_SIGNIFICANT_BYTE)         // byte 1
-        . chr(strlen($this->version->getProtocolIdentifierString())) // byte 2
-        . $this->version->getProtocolIdentifierString()              // byte 3,4,5,6
-        . chr($this->version->getProtocolVersion())                  // byte 7
-        . chr($this->getConnectFlags())                              // byte 8
-        . chr(0)                                                     // byte 9
-        . chr(10)                                                    // byte 10
-        ;
+        return chr(ControlPacketType::MOST_SIGNIFICANT_BYTE)              // byte 1
+             . chr(strlen($this->version->getProtocolIdentifierString())) // byte 2
+             . $this->version->getProtocolIdentifierString()              // byte 3,4,5,6
+             . chr($this->version->getProtocolVersion())                  // byte 7
+             . chr($this->getConnectFlags())                              // byte 8
+             . $this->getKeepAlive();                                     // byte 9,10
+    }
+
+    /**
+     * @return string
+     */
+    private function getKeepAlive()
+    {
+        $msb = $this->keepAlive >> 8;
+        $lsb = $this->keepAlive % 256;
+
+        return chr($msb)
+             . chr($lsb);
     }
 
     /**

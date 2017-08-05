@@ -13,7 +13,9 @@ use oliverlorenz\reactphpmqtt\protocol\Version;
  * A PUBLISH Control Packet is sent from a Client to a Server or from
  * Server to a Client to transport an Application Message.
  */
-class Publish extends ControlPacket {
+class Publish extends ControlPacket
+{
+    const EVENT = 'PUBLISH';
 
     protected $messageId;
 
