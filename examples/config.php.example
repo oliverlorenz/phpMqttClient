@@ -1,8 +1,7 @@
 <?php
 
 $config = array(
-    'server' => 'yourMqttBroker.tld',
-    'port' => 1883,
+    'broker' => 'yourMqttBroker.tld:1883',
     'options' => new \oliverlorenz\reactphpmqtt\packet\ConnectionOptions(array(
         'keepAlive' => 120,
     )),

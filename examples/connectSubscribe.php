@@ -3,16 +3,16 @@
 use oliverlorenz\reactphpmqtt\ClientFactory;
 use oliverlorenz\reactphpmqtt\packet\Publish;
 use oliverlorenz\reactphpmqtt\protocol\Version4;
-use React\Stream\Stream;
+use React\Socket\ConnectionInterface as Stream;
 
 require __DIR__ . '/../vendor/autoload.php';
 
 $config = require 'config.php';
 
-$connector = ClientFactory::createClient(new Version4(), '8.8.8.8');
+$client = ClientFactory::createClient(new Version4(), '8.8.8.8');
 
-$p = $connector->create($config['server'], $config['port'], $config['options']);
-$p->then(function(Stream $stream) use ($connector) {
+$p = $client->connect($config['broker'], $config['options']);
+$p->then(function(Stream $stream) use ($client) {
     $stream->on(Publish::EVENT, function(Publish $message) {
         printf(
             'Received payload "%s" for topic "%s"%s',
@@ -22,7 +22,7 @@ $p->then(function(Stream $stream) use ($connector) {
         );
     });
 
-    return $connector->subscribe($stream, 'hello/world', 0);
+    $client->subscribe($stream, 'hello/world', 0);
 });
 
-$connector->getLoop()->run();
+$client->getLoop()->run();

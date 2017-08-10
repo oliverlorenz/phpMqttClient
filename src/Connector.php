@@ -22,44 +22,42 @@ use oliverlorenz\reactphpmqtt\packet\Unsubscribe;
 use oliverlorenz\reactphpmqtt\packet\UnsubscribeAck;
 use oliverlorenz\reactphpmqtt\protocol\Version;
 use oliverlorenz\reactphpmqtt\protocol\Violation as ProtocolViolation;
-use React\Dns\Resolver\Resolver;
-use React\EventLoop\LoopInterface;
+use React\EventLoop\LoopInterface as Loop;
 use React\EventLoop\Timer\Timer;
 use React\Promise\Deferred;
 use React\Promise\FulfilledPromise;
 use React\Promise\PromiseInterface;
-use React\SocketClient\ConnectorInterface;
-use React\Stream\Stream;
+use React\Socket\ConnectionInterface as Connection;
+use React\Socket\ConnectorInterface as ReactConnector;
 
-class Connector implements ConnectorInterface {
-
+class Connector
+{
     /**
-     * @var $loop LoopInterface
+     * @var $loop Loop
      */
     private $loop;
-    protected $socketConnector;
+    private $socketConnector;
     private $version;
+
     private $messageCounter = 1;
 
-    public function __construct(LoopInterface $loop, Resolver $resolver, Version $version)
+    public function __construct(Loop $loop, ReactConnector $connector, Version $version)
     {
         $this->version = $version;
-        $this->socketConnector = new \React\SocketClient\Connector($loop, $resolver);
+        $this->socketConnector = $connector;
         $this->loop = $loop;
     }
 
     /**
      * Creates a new connection
      *
-     * @param string $host
-     * @param int $port [optional]
+     * @param string $uri
      * @param ConnectionOptions|null $options [optional]
      *
      * @return PromiseInterface Resolves to a \React\Stream\Stream once a connection has been established
      */
-    public function create(
-        $host,
-        $port = 1883,
+    public function connect(
+        $uri,
         ConnectionOptions $options = null
     ) {
         // Set default connection options, if none provided
@@ -67,21 +65,23 @@ class Connector implements ConnectorInterface {
             $options = $this->getDefaultConnectionOptions();
         }
 
-        return $this->socketConnector->create($host, $port)
-            ->then(function (Stream $stream) use ($options) {
-                return $this->connect($stream, $options);
-            })
-            ->then(function (Stream $stream) {
-                return $this->listenForPackets($stream);
-            })
-            ->then(function(Stream $stream) use ($options) {
-                return $this->keepAlive($stream, $options->keepAlive);
-            });
+        $promise = $this->socketConnector->connect($uri);
+        $promise->then(function(Connection $stream) {
+            $this->listenForPackets($stream);
+        });
+        $connection = $promise->then(function(Connection $stream) use ($options) {
+            return $this->sendConnectPacket($stream, $options);
+        });
+        $connection->then(function(Connection $stream) use ($options) {
+            return $this->keepAlive($stream, $options->keepAlive);
+        });
+
+        return $connection;
     }
 
-    private function listenForPackets(Stream $stream)
+    private function listenForPackets(Connection $stream)
     {
-        $stream->on('data', function ($rawData) use ($stream) {
+        $stream->on('data', function($rawData) use ($stream) {
             try {
                 foreach (Factory::getNextPacket($this->version, $rawData) as $packet) {
                     $stream->emit($packet::EVENT, [$packet]);
@@ -93,16 +93,16 @@ class Connector implements ConnectorInterface {
                 $stream->emit('INVALID', [$e]);
             }
         });
-
-        $deferred = new Deferred();
-        $stream->on(ConnectionAck::EVENT, function($message) use ($stream, $deferred) {
-            $deferred->resolve($stream);
-        });
-
-        return $deferred->promise();
+//
+//        $deferred = new Deferred();
+//        $stream->on(ConnectionAck::EVENT, function($message) use ($stream, $deferred) {
+//            $deferred->resolve($stream);
+//        });
+//
+//        return $deferred->promise();
     }
 
-    private function keepAlive(Stream $stream, $keepAlive)
+    private function keepAlive(Connection $stream, $keepAlive)
     {
         if($keepAlive > 0) {
             $interval = $keepAlive / 2;
@@ -119,7 +119,7 @@ class Connector implements ConnectorInterface {
     /**
      * @return \React\Promise\Promise
      */
-    public function connect(Stream $stream, ConnectionOptions $options) {
+    public function sendConnectPacket(Connection $stream, ConnectionOptions $options) {
         $packet = new Connect(
             $this->version,
             $options->username,
@@ -136,16 +136,22 @@ class Connector implements ConnectorInterface {
         echo MessageHelper::getReadableByRawString($message);
 
         $deferred = new Deferred();
-        if ($stream->write($message)) {
+        $stream->on(ConnectionAck::EVENT, function($message) use ($stream, $deferred) {
             $deferred->resolve($stream);
-        } else {
-            $deferred->reject();
-        }
+        });
+
+        $stream->write($message);
+//        $deferred = new Deferred();
+//        if ($stream->write($message)) {
+//            $deferred->resolve($stream);
+//        } else {
+//            $deferred->reject();
+//        }
 
         return $deferred->promise();
     }
 
-    private function sendPacketToStream(Stream $stream, ControlPacket $controlPacket)
+    private function sendPacketToStream(Connection $stream, ControlPacket $controlPacket)
     {
         echo "send:\t\t" . get_class($controlPacket) . "\n";
         $message = $controlPacket->get();
@@ -154,12 +160,12 @@ class Connector implements ConnectorInterface {
     }
 
     /**
-     * @param Stream $stream
+     * @param Connection $stream
      * @param string $topic
      * @param int $qos
      * @return \React\Promise\Promise
      */
-    public function subscribe(Stream $stream, $topic, $qos = 0)
+    public function subscribe(Connection $stream, $topic, $qos = 0)
     {
         $packet = new Subscribe($this->version);
         $packet->addSubscription($topic, $qos);
@@ -174,11 +180,11 @@ class Connector implements ConnectorInterface {
     }
 
     /**
-     * @param Stream $stream
+     * @param Connection $stream
      * @param string $topic
      * @return \React\Promise\Promise
      */
-    public function unsubscribe(Stream $stream, $topic)
+    public function unsubscribe(Connection $stream, $topic)
     {
         $packet = new Unsubscribe($this->version);
         $packet->removeSubscription($topic);
@@ -192,7 +198,7 @@ class Connector implements ConnectorInterface {
         return $deferred->promise();
     }
 
-    public function disconnect(Stream $stream)
+    public function disconnect(Connection $stream)
     {
         $packet = new Disconnect($this->version);
         $this->sendPacketToStream($stream, $packet);
@@ -204,7 +210,7 @@ class Connector implements ConnectorInterface {
     /**
      * @return \React\Promise\Promise
      */
-    public function publish(Stream $stream, $topic, $message, $qos = 0, $dup = false, $retain = false)
+    public function publish(Connection $stream, $topic, $message, $qos = 0, $dup = false, $retain = false)
     {
         $packet = new Publish($this->version);
         $packet->setTopic($topic);
@@ -227,7 +233,7 @@ class Connector implements ConnectorInterface {
     }
 
     /**
-     * @return LoopInterface
+     * @return Loop
      */
     public function getLoop()
     {
