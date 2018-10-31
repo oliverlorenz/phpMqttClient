@@ -7,5 +7,5 @@ php:
 
 script:
   - composer install
-  - php vendor/bin/phpunit --coverage-text --coverage-clover build/logs/clover.xml --bootstrap tests/bootstrap.php tests/
+  - php vendor/bin/phpunit -c ./tests/phpunit.xml --coverage-text --coverage-clover build/logs/clover.xml tests/
   - CODECLIMATE_REPO_TOKEN=731b1224e90b7ad7304e86768a8ed7b98b63d9e30bdc37b6295097c7bb5bedfd ./vendor/bin/test-reporter
