@@ -15,7 +15,7 @@
         }
     },
     "require": {
-        "react/socket": "^0.8.0"
+        "react/socket": "^1.1"
     },
     "require-dev": {
         "phpunit/phpunit": "^5.0.0",
