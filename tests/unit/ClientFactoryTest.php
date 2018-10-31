@@ -14,13 +14,13 @@ final class ClientFactoryTest extends TestCase
     {
         $client = ClientFactory::createClient(new Version4(), '8.8.8.8');
 
-        $this->assertInstanceOf(Connector::class, $client);
+        $this->assertInstanceOf(MqttClient::class, $client);
     }
 
     public function testSecureConnectorCanBeCreated()
     {
         $client = ClientFactory::createSecureClient(new Version4(), '8.8.8.8');
 
-        $this->assertInstanceOf(Connector::class, $client);
+        $this->assertInstanceOf(MqttClient::class, $client);
     }
 }

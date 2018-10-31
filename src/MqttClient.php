@@ -30,7 +30,7 @@ use React\Promise\PromiseInterface;
 use React\Socket\ConnectionInterface as Connection;
 use React\Socket\ConnectorInterface as ReactConnector;
 
-class Connector
+class MqttClient
 {
     /**
      * @var $loop Loop

@@ -16,7 +16,7 @@ class ClientFactory
         $loop = EventLoopFactory::create();
         $connector = self::createDnsConnector($resolverIp, $loop);
 
-        return new Connector($loop, $connector, $version);
+        return new MqttClient($loop, $connector, $version);
     }
 
     public static function createSecureClient(Version $version, $resolverIp = '8.8.8.8')
@@ -25,7 +25,7 @@ class ClientFactory
         $connector = self::createDnsConnector($resolverIp, $loop);
         $secureConnector = new SecureConnector($connector, $loop);
 
-        return new Connector($loop, $secureConnector, $version);
+        return new MqttClient($loop, $secureConnector, $version);
     }
 
     private static function createDnsConnector($resolverIp, $loop)
