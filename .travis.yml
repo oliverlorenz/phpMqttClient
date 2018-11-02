@@ -1,3 +1,7 @@
+env:
+  global:
+    - CC_TEST_REPORTER_ID=731b1224e90b7ad7304e86768a8ed7b98b63d9e30bdc37b6295097c7bb5bedfd
+
 language: php
 
 php:
@@ -6,7 +10,14 @@ php:
   - 7.1
   - 7.2
 
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - if [ $(phpenv version-name) = "7.2" ]; then ./cc-test-reporter before-build; fi
+
 script:
   - composer install
   - php vendor/bin/phpunit -c ./tests/phpunit.xml --coverage-text --coverage-clover build/logs/clover.xml tests/
-  - CODECLIMATE_REPO_TOKEN=731b1224e90b7ad7304e86768a8ed7b98b63d9e30bdc37b6295097c7bb5bedfd ./vendor/bin/test-reporter
+
+after_script:
+  - if [ $(phpenv version-name) = "7.2" ]; then ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT; fi
