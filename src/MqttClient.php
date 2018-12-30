@@ -107,9 +107,13 @@ class MqttClient
         if($keepAlive > 0) {
             $interval = $keepAlive / 2;
 
-            $this->getLoop()->addPeriodicTimer($interval, function(Timer $timer) use ($stream) {
+            $timer = $this->getLoop()->addPeriodicTimer($interval, function(Timer $timer) use ($stream) {
                 $packet = new PingRequest($this->version);
                 $this->sendPacketToStream($stream, $packet);
+            });
+
+            $stream->on('close', function() use ($timer) {
+                $this->getLoop()->cancelTimer($timer);
             });
         }
 
