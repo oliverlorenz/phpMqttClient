@@ -23,7 +23,6 @@ use oliverlorenz\reactphpmqtt\packet\UnsubscribeAck;
 use oliverlorenz\reactphpmqtt\protocol\Version;
 use oliverlorenz\reactphpmqtt\protocol\Violation as ProtocolViolation;
 use React\EventLoop\LoopInterface as Loop;
-use React\EventLoop\Timer\Timer;
 use React\Promise\Deferred;
 use React\Promise\FulfilledPromise;
 use React\Promise\PromiseInterface;
@@ -107,7 +106,7 @@ class MqttClient
         if($keepAlive > 0) {
             $interval = $keepAlive / 2;
 
-            $timer = $this->getLoop()->addPeriodicTimer($interval, function(Timer $timer) use ($stream) {
+            $timer = $this->getLoop()->addPeriodicTimer($interval, function() use ($stream) {
                 $packet = new PingRequest($this->version);
                 $this->sendPacketToStream($stream, $packet);
             });
