@@ -22,6 +22,7 @@ use oliverlorenz\reactphpmqtt\packet\Unsubscribe;
 use oliverlorenz\reactphpmqtt\packet\UnsubscribeAck;
 use oliverlorenz\reactphpmqtt\protocol\Version;
 use oliverlorenz\reactphpmqtt\protocol\Violation as ProtocolViolation;
+use Psr\Log\LoggerInterface;
 use React\EventLoop\LoopInterface as Loop;
 use React\EventLoop\Timer\Timer;
 use React\Promise\Deferred;
@@ -38,14 +39,24 @@ class MqttClient
     private $loop;
     private $socketConnector;
     private $version;
+    private $logger;
 
     private $messageCounter = 1;
 
-    public function __construct(Loop $loop, ReactConnector $connector, Version $version)
+    public function __construct(Loop $loop, ReactConnector $connector, Version $version, LoggerInterface $logger = null)
     {
         $this->version = $version;
         $this->socketConnector = $connector;
         $this->loop = $loop;
+        $this->logger = $logger;
+    }
+
+    /**
+     * @param LoggerInterface|null $logger
+     */
+    public function setLogger(LoggerInterface $logger = null)
+    {
+        $this->logger = $logger;
     }
 
     /**
@@ -85,7 +96,7 @@ class MqttClient
             try {
                 foreach (Factory::getNextPacket($this->version, $rawData) as $packet) {
                     $stream->emit($packet::EVENT, [$packet]);
-                    echo "received:\t" . get_class($packet) . PHP_EOL;
+                    $this->debug("received:\t" . get_class($packet));
                 }
             }
             catch (ProtocolViolation $e) {
@@ -133,7 +144,7 @@ class MqttClient
             $options->keepAlive
         );
         $message = $packet->get();
-        echo MessageHelper::getReadableByRawString($message);
+        $this->debug(MessageHelper::getReadableByRawString($message));
 
         $deferred = new Deferred();
         $stream->on(ConnectionAck::EVENT, function($message) use ($stream, $deferred) {
@@ -153,7 +164,8 @@ class MqttClient
 
     private function sendPacketToStream(Connection $stream, ControlPacket $controlPacket)
     {
-        echo "send:\t\t" . get_class($controlPacket) . "\n";
+        $this->debug("send:\t\t" . get_class($controlPacket));
+
         $message = $controlPacket->get();
 
         return $stream->write($message);
@@ -248,5 +260,11 @@ class MqttClient
     private function getDefaultConnectionOptions()
     {
         return new ConnectionOptions();
+    }
+
+    private function debug($message) {
+        if ($this->logger !== null) {
+            $this->logger->debug($message);
+        }
     }
 }
