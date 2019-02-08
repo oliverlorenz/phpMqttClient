@@ -12,21 +12,21 @@ use React\Socket\TcpConnector;
 
 class ClientFactory
 {
-    public static function createClient(Version $version, $resolverIp = '8.8.8.8', LoggerInterface $logger = null)
+    public static function createClient(Version $version, $resolverIp = '8.8.8.8')
     {
         $loop = EventLoopFactory::create();
         $connector = self::createDnsConnector($resolverIp, $loop);
 
-        return new MqttClient($loop, $connector, $version, $logger);
+        return new MqttClient($loop, $connector, $version);
     }
 
-    public static function createSecureClient(Version $version, $resolverIp = '8.8.8.8', LoggerInterface $logger = null)
+    public static function createSecureClient(Version $version, $resolverIp = '8.8.8.8')
     {
         $loop = EventLoopFactory::create();
         $connector = self::createDnsConnector($resolverIp, $loop);
         $secureConnector = new SecureConnector($connector, $loop);
 
-        return new MqttClient($loop, $secureConnector, $version, $logger);
+        return new MqttClient($loop, $secureConnector, $version);
     }
 
     private static function createDnsConnector($resolverIp, $loop)
