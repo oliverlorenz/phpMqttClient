@@ -85,7 +85,7 @@ class MqttClient
             try {
                 foreach (Factory::getNextPacket($this->version, $rawData) as $packet) {
                     $stream->emit($packet::EVENT, [$packet]);
-                    echo "received:\t" . get_class($packet) . PHP_EOL;
+                    #echo "received:\t" . get_class($packet) . PHP_EOL; // TODO: wrap in a logger
                 }
             }
             catch (ProtocolViolation $e) {
@@ -133,7 +133,7 @@ class MqttClient
             $options->keepAlive
         );
         $message = $packet->get();
-        echo MessageHelper::getReadableByRawString($message);
+        #echo MessageHelper::getReadableByRawString($message); // TODO: wrap into a logger
 
         $deferred = new Deferred();
         $stream->on(ConnectionAck::EVENT, function($message) use ($stream, $deferred) {
@@ -153,7 +153,7 @@ class MqttClient
 
     private function sendPacketToStream(Connection $stream, ControlPacket $controlPacket)
     {
-        echo "send:\t\t" . get_class($controlPacket) . "\n";
+        #echo "send:\t\t" . get_class($controlPacket) . "\n"; // TODO: wrap it to a logger...
         $message = $controlPacket->get();
 
         return $stream->write($message);
