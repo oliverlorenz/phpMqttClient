@@ -43,17 +43,18 @@ class MqttClient
 
     private $messageCounter = 1;
 
-    public function __construct(Loop $loop, ReactConnector $connector, Version $version)
+    public function __construct(Loop $loop, ReactConnector $connector, Version $version, LoggerInterface $logger = null)
     {
         $this->version = $version;
         $this->socketConnector = $connector;
         $this->loop = $loop;
+        $this->logger = $logger;
     }
 
     /**
-     * @param LoggerInterface $logger
+     * @param LoggerInterface|null $logger
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger = null)
     {
         $this->logger = $logger;
     }
