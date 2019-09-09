@@ -13,7 +13,6 @@ use oliverlorenz\reactphpmqtt\packet\ConnectionOptions;
 use oliverlorenz\reactphpmqtt\packet\ControlPacket;
 use oliverlorenz\reactphpmqtt\packet\Disconnect;
 use oliverlorenz\reactphpmqtt\packet\Factory;
-use oliverlorenz\reactphpmqtt\packet\MessageHelper;
 use oliverlorenz\reactphpmqtt\packet\PingRequest;
 use oliverlorenz\reactphpmqtt\packet\Publish;
 use oliverlorenz\reactphpmqtt\packet\Subscribe;
@@ -85,7 +84,6 @@ class MqttClient
             try {
                 foreach (Factory::getNextPacket($this->version, $rawData) as $packet) {
                     $stream->emit($packet::EVENT, [$packet]);
-                    echo "received:\t" . get_class($packet) . PHP_EOL;
                 }
             }
             catch (ProtocolViolation $e) {
@@ -133,7 +131,6 @@ class MqttClient
             $options->keepAlive
         );
         $message = $packet->get();
-        echo MessageHelper::getReadableByRawString($message);
 
         $deferred = new Deferred();
         $stream->on(ConnectionAck::EVENT, function($message) use ($stream, $deferred) {
@@ -153,7 +150,6 @@ class MqttClient
 
     private function sendPacketToStream(Connection $stream, ControlPacket $controlPacket)
     {
-        echo "send:\t\t" . get_class($controlPacket) . "\n";
         $message = $controlPacket->get();
 
         return $stream->write($message);

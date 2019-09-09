@@ -13,6 +13,8 @@ namespace oliverlorenz\reactphpmqtt\packet;
  */
 class PublishComplete extends ControlPacket {
 
+    const EVENT = 'PUBLISH_COMPLETE';
+
     public static function getControlPacketType()
     {
         return ControlPacketType::PUBCOMP;
