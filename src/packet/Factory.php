@@ -21,8 +21,14 @@ class Factory
     public static function getNextPacket(Version $version, $remainingData)
     {
         while(isset($remainingData{1})) {
-            $remainingLength = ord($remainingData{1});
-            $packetLength = 2 + $remainingLength;
+            $byte = 1;
+            $packetLength = 0;
+            do {
+                $digit = ord($remainingData{$byte});
+                $packetLength += $digit;
+                $byte++;
+            } while (($digit & 128) != 0);
+            $packetLength += 2;
             $nextPacketData = substr($remainingData, 0, $packetLength);
             $remainingData = substr($remainingData, $packetLength);
 
