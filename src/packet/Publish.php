@@ -53,7 +53,7 @@ class Publish extends ControlPacket
         }
         $packet->payload = substr(
             $rawInput,
-            4 + strlen($topic)
+            $topicStart + 2 + strlen($topic)
         );
 
         return $packet;
