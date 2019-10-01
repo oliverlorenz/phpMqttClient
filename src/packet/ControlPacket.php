@@ -25,10 +25,11 @@ abstract class ControlPacket {
 
     /**
      * @param Version $version
-     * @param string $rawInput
+     * @param string  $rawInput
+     * @param int     $topicStart
      * @return static
      */
-    public static function parse(Version $version, $rawInput)
+    public static function parse(Version $version, $rawInput, $topicStart = 2)
     {
         static::checkRawInputValidControlPackageType($rawInput);
 

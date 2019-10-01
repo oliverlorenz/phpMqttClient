@@ -21,16 +21,22 @@ class Factory
     public static function getNextPacket(Version $version, $remainingData)
     {
         while(isset($remainingData{1})) {
-            $remainingLength = ord($remainingData{1});
-            $packetLength = 2 + $remainingLength;
+            $byte = 1;
+            $packetLength = 0;
+            do {
+                $digit = ord($remainingData{$byte});
+                $packetLength += $digit;
+                $byte++;
+            } while (($digit & 128) != 0);
+            $packetLength += 2;
             $nextPacketData = substr($remainingData, 0, $packetLength);
             $remainingData = substr($remainingData, $packetLength);
 
-            yield self::getByMessage($version, $nextPacketData);
+            yield self::getByMessage($version, $nextPacketData, $byte);
         }
     }
 
-    private static function getByMessage(Version $version, $input)
+    private static function getByMessage(Version $version, $input, $topicStart = 2)
     {
         $controlPacketType = ord($input{0}) >> 4;
 
@@ -45,7 +51,7 @@ class Factory
                 return SubscribeAck::parse($version, $input);
 
             case Publish::getControlPacketType():
-                return Publish::parse($version, $input);
+                return Publish::parse($version, $input, $topicStart);
 
             case PublishComplete::getControlPacketType():
                 return PublishComplete::parse($version, $input);

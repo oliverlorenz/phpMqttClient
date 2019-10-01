@@ -32,13 +32,13 @@ class Publish extends ControlPacket
         return ControlPacketType::PUBLISH;
     }
 
-    public static function parse(Version $version, $rawInput)
+    public static function parse(Version $version, $rawInput, $topicStart = 2)
     {
         /** @var Publish $packet */
         $packet = parent::parse($version, $rawInput);
 
         //TODO 3.3.2.2 Packet Identifier not yet supported
-        $topic = static::getPayloadLengthPrefixFieldInRawInput(2, $rawInput);
+        $topic = static::getPayloadLengthPrefixFieldInRawInput($topicStart, $rawInput);
         $packet->setTopic($topic);
 
         $byte1 = $rawInput{0};
@@ -53,7 +53,7 @@ class Publish extends ControlPacket
         }
         $packet->payload = substr(
             $rawInput,
-            4 + strlen($topic)
+            $topicStart + 2 + strlen($topic)
         );
 
         return $packet;
